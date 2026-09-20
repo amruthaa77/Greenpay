@@ -1,7 +1,24 @@
 from typing import List, Union
-from pydantic import AnyHttpUrl, validator
+from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
+
+def normalize_database_url(url: str) -> str:
+    """
+    Ensure PostgreSQL URLs use the psycopg (v3) driver ('postgresql+psycopg://')
+    instead of the default psycopg2 driver, and fix legacy 'postgres://' prefixes
+    provided by Render and other cloud hosts.
+    """
+    if not url or not isinstance(url, str):
+        return url
+    trimmed = url.strip()
+    if trimmed.startswith("postgres://"):
+        return "postgresql+psycopg://" + trimmed[len("postgres://"):]
+    if trimmed.startswith("postgresql+psycopg2://"):
+        return "postgresql+psycopg://" + trimmed[len("postgresql+psycopg2://"):]
+    if trimmed.startswith("postgresql://"):
+        return "postgresql+psycopg://" + trimmed[len("postgresql://"):]
+    return trimmed
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "GreenPay"
@@ -22,6 +39,11 @@ class Settings(BaseSettings):
     _base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     _default_db = os.path.join(_base_dir, "greenpay.db").replace("\\", "/")
     DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{_default_db}")
+
+    @field_validator("DATABASE_URL", mode="before")
+    @classmethod
+    def assemble_db_connection(cls, v: str) -> str:
+        return normalize_database_url(v)
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = [
@@ -34,3 +56,4 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="allow")
 
 settings = Settings()
+

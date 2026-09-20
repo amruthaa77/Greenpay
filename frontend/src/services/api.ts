@@ -1,4 +1,11 @@
-const API_BASE_URL = '/api/v1';
+// Resolve API base URL:
+// 1. If VITE_API_URL environment variable is provided, use it (trim trailing slashes)
+// 2. In production build without explicit env var, default to the production Render backend
+// 3. In local development without env var, fall back to '/api/v1' (routed via Vite proxy to 127.0.0.1:8000)
+const envApiUrl = import.meta.env.VITE_API_URL;
+export const API_BASE_URL = envApiUrl
+  ? envApiUrl.replace(/\/+$/, '')
+  : (import.meta.env.PROD ? 'https://greenpay-api.onrender.com/api/v1' : '/api/v1');
 
 export class ApiError extends Error {
   status: number;
@@ -23,7 +30,10 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const url = `${API_BASE_URL}${endpoint}`;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
+    ? endpoint
+    : `${API_BASE_URL}${cleanEndpoint}`;
   let response: Response;
   try {
     response = await fetch(url, {

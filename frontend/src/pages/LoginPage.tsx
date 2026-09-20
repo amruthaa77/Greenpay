@@ -132,7 +132,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
           transition={{ duration: 0.25, delay: 0.05 }}
           className="lg:col-span-6 w-full max-w-md mx-auto"
         >
-          <div className="bg-white rounded-3xl p-6 sm:p-9 shadow-xl border border-slate-200/80 relative">
+          <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-9 shadow-xl border border-slate-200/80 relative">
             {/* Form Header */}
             <div className="text-center mb-6">
               <div className="flex justify-center mb-3">
@@ -156,7 +156,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onNavigate }) => {
                 <Badge variant="neutral" size="xs">One-Click Fill</Badge>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button
                   type="button"
                   onClick={fillDemoCitizen}

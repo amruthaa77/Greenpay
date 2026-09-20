@@ -34,30 +34,30 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-200 ${className}`}
+      className={`bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all duration-200 min-w-0 ${className}`}
     >
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
+      <div className="flex items-start justify-between gap-2">
+        <div className="space-y-1 min-w-0 flex-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
             {title}
           </p>
           <div className="flex items-baseline gap-2">
-            <h3 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight truncate">
               {value}
             </h3>
           </div>
         </div>
 
         <div
-          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center border shrink-0 ${iconBgStyles[variant]}`}
+          className={`w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center border shrink-0 ${iconBgStyles[variant]}`}
         >
           {icon}
         </div>
       </div>
 
       {(subtitle || trend) && (
-        <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          {subtitle && <span className="text-slate-500 font-medium">{subtitle}</span>}
+        <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs">
+          {subtitle && <span className="text-slate-500 dark:text-slate-400 font-medium truncate">{subtitle}</span>}
           {trend && (
             <span
               className={`inline-flex items-center gap-1 font-bold ${

@@ -61,9 +61,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const links = isAdmin ? adminLinks : citizenLinks;
 
   return (
-    <aside className="w-64 bg-white border-r border-slate-200/80 flex flex-col h-screen sticky top-0 shrink-0 z-30 select-none">
+    <aside className="w-full lg:w-64 max-w-full bg-white dark:bg-slate-900 border-r border-slate-200/80 dark:border-slate-800 flex flex-col h-full lg:h-screen sticky top-0 shrink-0 z-30 select-none">
       {/* Brand Header */}
-      <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+      <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
         <div
           className="cursor-pointer"
           onClick={() => onNavigate(isAdmin ? '/admin' : '/dashboard')}
@@ -137,16 +137,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </nav>
 
       {/* User & Settings Footer */}
-      <div className="p-4 border-t border-slate-100 bg-slate-50/60 space-y-3">
+      <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/60 space-y-3">
         {/* Language & Notification Row */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center bg-slate-200/70 p-1 rounded-xl text-xs font-bold">
+          <div className="flex items-center bg-slate-200/70 dark:bg-slate-800 p-1 rounded-xl text-xs font-bold">
             <button
               onClick={() => setLanguage('en')}
               className={`px-2 py-0.5 rounded-lg transition-all text-[11px] ${
                 language === 'en'
-                  ? 'bg-white text-emerald-900 shadow-xs font-bold'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-emerald-900 dark:text-emerald-300 shadow-xs font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               EN
@@ -155,8 +155,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => setLanguage('kn')}
               className={`px-2 py-0.5 rounded-lg transition-all text-[11px] ${
                 language === 'kn'
-                  ? 'bg-white text-emerald-900 shadow-xs font-bold'
-                  : 'text-slate-500 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-900 text-emerald-900 dark:text-emerald-300 shadow-xs font-bold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               ಕನ್ನಡ
@@ -165,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={onOpenNotifications}
-            className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-white rounded-xl transition-colors border border-transparent hover:border-slate-200"
+            className="relative p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-800 rounded-xl transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
             title={t('nav.notifications_tooltip')}
           >
             <Bell className="w-4 h-4" />
@@ -178,12 +178,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* User Card */}
-        <div className="flex items-center justify-between p-2 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+        <div className="flex items-center justify-between p-2 rounded-2xl bg-white dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 shadow-xs">
           <div className="min-w-0 flex-1 pr-2">
-            <p className="text-xs font-bold text-slate-900 truncate">
+            <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
               {session?.name || 'Citizen'}
             </p>
-            <p className="text-[10px] text-slate-500 font-mono truncate">
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono truncate">
               {session?.meter_number}
             </p>
           </div>
@@ -192,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               logout();
               onNavigate('/');
             }}
-            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors shrink-0"
+            className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors shrink-0"
             title={t('nav.signout_tooltip')}
           >
             <LogOut className="w-4 h-4" />

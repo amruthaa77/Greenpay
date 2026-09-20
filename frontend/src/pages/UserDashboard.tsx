@@ -85,7 +85,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ onNavigate }) => {
     return (
       <div className="space-y-6 animate-pulse">
         <div className="h-28 bg-slate-200/80 rounded-3xl" />
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div className="h-32 bg-slate-200/80 rounded-3xl" />
           <div className="h-32 bg-slate-200/80 rounded-3xl" />
           <div className="h-32 bg-slate-200/80 rounded-3xl" />
@@ -167,7 +167,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ onNavigate }) => {
       </div>
 
       {/* 4 Executive KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
         <StatCard
           title={t('score.title')}
           value={`🌱 ${greenScore?.score?.toFixed(0) || 75}`}
@@ -239,13 +239,13 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ onNavigate }) => {
         </div>
 
         {/* Right Column: Waste Collection Trends (Recharts) */}
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-7 min-w-0">
           <ChartCard
             title="Waste Collection Activity"
             subtitle="Recent certified weighments & reward progression"
           >
             {trendData.length > 0 ? (
-              <div className="h-64 sm:h-72 w-full pt-2">
+              <div className="h-56 sm:h-72 w-full pt-2 min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trendData}>
                     <defs>
@@ -325,7 +325,7 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ onNavigate }) => {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
           {[
             { name: 'Table Salt', qty: '1 kg', cost: 100, icon: '🧂' },
             { name: 'Sona Masoori Rice', qty: '2 kg', cost: 200, icon: '🍚' },

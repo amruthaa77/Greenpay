@@ -98,7 +98,7 @@ export const UserWasteHistoryPage: React.FC = () => {
         <CardContent className="p-4 sm:p-5">
           <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
             {/* Search */}
-            <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
+            <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md w-full">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
@@ -117,7 +117,7 @@ export const UserWasteHistoryPage: React.FC = () => {
                   setSelectedType(e.target.value);
                   setPage(1);
                 }}
-                className="py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                className="flex-1 sm:flex-initial py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               >
                 <option value="All">{t('filter.all_waste_types')}</option>
                 <option value="Recyclable">Recyclable</option>
@@ -133,7 +133,7 @@ export const UserWasteHistoryPage: React.FC = () => {
                   setSelectedStatus(e.target.value);
                   setPage(1);
                 }}
-                className="py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                className="flex-1 sm:flex-initial py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               >
                 <option value="All">{t('filter.all_statuses')}</option>
                 <option value="PENDING">Pending</option>

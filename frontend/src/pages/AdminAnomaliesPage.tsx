@@ -89,7 +89,7 @@ export const AdminAnomaliesPage: React.FC = () => {
         subtitle={t('anomalies.subtitle')}
         badge={<Badge variant="amber" dot>{t('anomalies.badge')}</Badge>}
         actions={
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl text-xs font-bold">
+          <div className="flex flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-2xl text-xs font-bold">
             {[
               { label: 'Pending Review', val: 'PENDING_REVIEW' },
               { label: 'Confirmed', val: 'CONFIRMED' },
@@ -99,7 +99,7 @@ export const AdminAnomaliesPage: React.FC = () => {
               <button
                 key={f.val}
                 onClick={() => setStatusFilter(f.val)}
-                className={`px-3 py-1.5 rounded-xl transition-all ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-xl transition-all ${
                   statusFilter === f.val
                     ? 'bg-white text-emerald-950 shadow-xs'
                     : 'text-slate-500 hover:text-slate-900'
@@ -175,12 +175,13 @@ export const AdminAnomaliesPage: React.FC = () => {
                   </div>
 
                   {a.status === 'PENDING_REVIEW' && (
-                    <div className="flex items-center gap-2.5 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100">
+                    <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 w-full sm:w-auto">
                       <Button
                         variant="danger"
                         size="sm"
                         onClick={() => handleOpenReview(a, 'CONFIRMED')}
                         leftIcon={<AlertTriangle className="w-3.5 h-3.5" />}
+                        className="flex-1 sm:flex-initial"
                       >
                         Confirm Spike
                       </Button>
@@ -189,6 +190,7 @@ export const AdminAnomaliesPage: React.FC = () => {
                         size="sm"
                         onClick={() => handleOpenReview(a, 'DISMISSED')}
                         leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                        className="flex-1 sm:flex-initial"
                       >
                         Dismiss Alert
                       </Button>

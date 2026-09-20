@@ -118,12 +118,12 @@ export const AdminWardIntelligencePage: React.FC = () => {
       {/* Analytics Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Ward Comparison Bar Chart */}
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-7 min-w-0">
           <ChartCard
             title="Ward Collection Volumes"
             subtitle="Total waste kg aggregated across verified BBMP wards"
           >
-            <div className="h-72 w-full pt-2">
+            <div className="h-60 sm:h-72 w-full pt-2 min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={wardComparisonData}>
                   <XAxis dataKey="name" stroke="#94A3B8" fontSize={11} tickLine={false} />
@@ -148,12 +148,12 @@ export const AdminWardIntelligencePage: React.FC = () => {
         </div>
 
         {/* Waste Composition Donut Chart */}
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 min-w-0">
           <ChartCard
             title="City-Wide Composition"
             subtitle="Aggregated breakdown across 9 BBMP pilot zones"
           >
-            <div className="h-72 w-full flex items-center justify-center">
+            <div className="h-60 sm:h-72 w-full flex items-center justify-center min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -202,7 +202,7 @@ export const AdminWardIntelligencePage: React.FC = () => {
           <Badge variant="emerald" dot>94.2% Model Confidence</Badge>
         </CardHeader>
         <CardContent>
-          <div className="h-64 w-full pt-2">
+          <div className="h-56 sm:h-64 w-full pt-2 min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={forecastTrend}>
                 <defs>

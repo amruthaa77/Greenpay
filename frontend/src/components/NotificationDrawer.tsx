@@ -77,19 +77,19 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({ isOpen, 
         />
 
         {/* Drawer Panel */}
-        <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+        <div className="fixed inset-y-0 right-0 max-w-full flex pl-3 sm:pl-10">
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="w-screen max-w-md bg-white shadow-2xl flex flex-col border-l border-gray-100"
+            className="w-screen max-w-[calc(100vw-0.75rem)] sm:max-w-md bg-white dark:bg-slate-900 shadow-2xl flex flex-col border-l border-gray-100 dark:border-slate-800"
           >
             {/* Drawer Header */}
-            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+            <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Bell className="w-5 h-5 text-emerald-800" />
-                <h3 className="font-bold text-gray-900 text-base">{t('notifications.title')}</h3>
+                <Bell className="w-5 h-5 text-emerald-800 dark:text-emerald-400" />
+                <h3 className="font-bold text-gray-900 dark:text-white text-base">{t('notifications.title')}</h3>
                 {unreadCount > 0 && (
                   <span className="text-[11px] font-bold px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-full">
                     {t('notifications.unread_badge', { count: unreadCount })}

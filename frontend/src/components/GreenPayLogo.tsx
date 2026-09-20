@@ -84,7 +84,7 @@ export const GreenPayLogo: React.FC<LogoProps> = ({
           <span className={`font-bold tracking-tight text-emerald-950 dark:text-emerald-50 ${text}`}>
             GREEN<span className="text-emerald-600">PAY</span>
           </span>
-          <span className={`font-medium tracking-wider text-emerald-700 uppercase ${sub}`}>
+          <span className={`hidden sm:inline-block font-medium tracking-wider text-emerald-700 uppercase ${sub}`}>
             Bengaluru Civic-Tech
           </span>
         </div>

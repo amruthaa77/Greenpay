@@ -56,11 +56,11 @@ export const SecureAdminRegisterPage: React.FC<SecureAdminRegisterProps> = ({ on
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-gray-900/95">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-3 sm:p-4 py-6 sm:py-10 bg-gray-900/95">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-white rounded-3xl p-7 sm:p-9 shadow-2xl border border-gray-100 relative"
+        className="w-full max-w-md bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-9 shadow-2xl border border-gray-100 relative"
       >
         <div className="text-center mb-6">
           <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-800 flex items-center justify-center mx-auto mb-3">

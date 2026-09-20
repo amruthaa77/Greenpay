@@ -86,8 +86,8 @@ export const UserProfilePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200/80 text-center min-w-[90px]">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto">
+            <div className="flex-1 sm:flex-initial p-3 sm:p-3.5 bg-emerald-50 rounded-2xl border border-emerald-200/80 text-center min-w-[100px]">
               <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">
                 {t('green_score')}
               </span>
@@ -96,7 +96,7 @@ export const UserProfilePage: React.FC = () => {
               </span>
             </div>
 
-            <div className="p-3.5 bg-amber-50 rounded-2xl border border-amber-200/80 text-center min-w-[90px]">
+            <div className="flex-1 sm:flex-initial p-3 sm:p-3.5 bg-amber-50 rounded-2xl border border-amber-200/80 text-center min-w-[100px]">
               <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider flex items-center justify-center gap-1">
                 <Flame className="w-3.5 h-3.5 text-amber-600" />
                 {t('profile.streak_label')}

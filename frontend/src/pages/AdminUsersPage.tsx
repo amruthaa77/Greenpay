@@ -105,7 +105,7 @@ export const AdminUsersPage: React.FC = () => {
       <Card>
         <CardContent className="p-4 sm:p-5">
           <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
-            <form onSubmit={handleSearch} className="relative flex-1 max-w-md">
+            <form onSubmit={handleSearch} className="relative flex-1 max-w-md w-full">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
@@ -123,7 +123,7 @@ export const AdminUsersPage: React.FC = () => {
                   setUserType(e.target.value);
                   setPage(1);
                 }}
-                className="py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
+                className="flex-1 sm:flex-initial py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               >
                 <option value="All">All User Types</option>
                 <option value="Individual">Individual Households</option>
@@ -134,14 +134,14 @@ export const AdminUsersPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Directory Table / Cards */}
+      {/* Users Table / List */}
       <Card>
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 space-y-3 animate-pulse">
-              <div className="h-14 bg-slate-100 rounded-xl" />
-              <div className="h-14 bg-slate-100 rounded-xl" />
-              <div className="h-14 bg-slate-100 rounded-xl" />
+            <div className="p-8 space-y-4 animate-pulse">
+              <div className="h-12 bg-slate-100 rounded-2xl" />
+              <div className="h-12 bg-slate-100 rounded-2xl" />
+              <div className="h-12 bg-slate-100 rounded-2xl" />
             </div>
           ) : users.length === 0 ? (
             <div className="p-8">
@@ -153,7 +153,7 @@ export const AdminUsersPage: React.FC = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full text-left border-collapse min-w-[650px]">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50/60 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     <th className="p-4 sm:px-6">Citizen</th>
@@ -248,7 +248,7 @@ export const AdminUsersPage: React.FC = () => {
         {selectedUserDetail && (
           <div className="space-y-5 text-xs">
             {/* Quick KPI stats in modal */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
               <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200/80 text-center">
                 <span className="text-[10px] font-bold text-emerald-800 uppercase block">Green Score</span>
                 <span className="text-xl font-black text-emerald-950 mt-0.5 block">

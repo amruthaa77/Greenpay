@@ -264,10 +264,10 @@ export const AdminRewardManagementPage: React.FC<AdminRewardManagementPageProps>
       />
 
       {/* Tabs */}
-      <div className="flex items-center gap-3 border-b border-slate-200">
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 border-b border-slate-200 overflow-x-auto">
         <button
           onClick={() => setActiveTab('redemptions')}
-          className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-2.5 sm:pb-3 px-1.5 sm:px-2 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 border-b-2 transition-colors shrink-0 ${
             activeTab === 'redemptions'
               ? 'border-emerald-700 text-emerald-900'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -282,7 +282,7 @@ export const AdminRewardManagementPage: React.FC<AdminRewardManagementPageProps>
 
         <button
           onClick={() => setActiveTab('catalogue')}
-          className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-2.5 sm:pb-3 px-1.5 sm:px-2 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 border-b-2 transition-colors shrink-0 ${
             activeTab === 'catalogue'
               ? 'border-emerald-700 text-emerald-900'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -666,7 +666,7 @@ export const AdminRewardManagementPage: React.FC<AdminRewardManagementPageProps>
         maxWidth="md"
       >
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Item Name</label>
               <input
@@ -689,7 +689,7 @@ export const AdminRewardManagementPage: React.FC<AdminRewardManagementPageProps>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">Quantity Label</label>
               <input

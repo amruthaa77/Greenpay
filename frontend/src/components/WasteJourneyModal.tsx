@@ -27,12 +27,12 @@ export const WasteJourneyModal: React.FC<WasteJourneyModalProps> = ({ entry, onC
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xs">
         <motion.div
           initial={{ opacity: 0, scale: 0.93, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.93, y: 10 }}
-          className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 overflow-hidden relative max-h-[90vh] flex flex-col"
+          className="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full p-4 sm:p-8 shadow-2xl border border-gray-100 overflow-hidden relative max-h-[92vh] sm:max-h-[90vh] flex flex-col"
         >
           {/* Header */}
           <div className="flex items-start justify-between pb-5 border-b border-gray-100 shrink-0">
@@ -70,7 +70,7 @@ export const WasteJourneyModal: React.FC<WasteJourneyModalProps> = ({ entry, onC
                 {t('journey.pipeline_header')}
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 relative">
                 {stages.map((st, idx) => {
                   const Icon = st.icon;
                   const isCompleted = idx < currentStageIndex;
@@ -132,7 +132,7 @@ export const WasteJourneyModal: React.FC<WasteJourneyModalProps> = ({ entry, onC
             </div>
 
             {/* Waste Record Specifications Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
               <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
                 <span className="text-[11px] font-medium text-gray-500">{t('journey.spec_category')}</span>
                 <p className="text-sm font-bold text-gray-900 mt-0.5">{translateWasteType(entry.waste_type)}</p>
@@ -208,13 +208,13 @@ export const WasteJourneyModal: React.FC<WasteJourneyModalProps> = ({ entry, onC
           </div>
 
           {/* Footer */}
-          <div className="pt-4 border-t border-gray-100 flex items-center justify-between shrink-0">
-            <span className="text-[11px] text-gray-400">
+          <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+            <span className="text-[11px] text-gray-400 text-center sm:text-left">
               {t('journey.immutable_id', { id: entry.id })}
             </span>
             <button
               onClick={onClose}
-              className="px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold rounded-xl transition-colors"
+              className="w-full sm:w-auto px-5 py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-xs font-bold rounded-xl transition-colors"
             >
               {t('action.done')}
             </button>

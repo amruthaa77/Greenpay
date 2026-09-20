@@ -238,10 +238,10 @@ export const EssentialRewardsPage: React.FC<EssentialRewardsPageProps> = ({ onNa
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex items-center gap-3 border-b border-slate-200">
+      <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 border-b border-slate-200 overflow-x-auto">
         <button
           onClick={() => setActiveTab('catalogue')}
-          className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-2.5 sm:pb-3 px-1.5 sm:px-2 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 border-b-2 transition-colors shrink-0 ${
             activeTab === 'catalogue'
               ? 'border-emerald-700 text-emerald-900'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -256,7 +256,7 @@ export const EssentialRewardsPage: React.FC<EssentialRewardsPageProps> = ({ onNa
 
         <button
           onClick={() => setActiveTab('my-redemptions')}
-          className={`pb-3 px-2 text-sm font-bold flex items-center gap-2 border-b-2 transition-colors ${
+          className={`pb-2.5 sm:pb-3 px-1.5 sm:px-2 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 border-b-2 transition-colors shrink-0 ${
             activeTab === 'my-redemptions'
               ? 'border-emerald-700 text-emerald-900'
               : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -597,7 +597,7 @@ export const EssentialRewardsPage: React.FC<EssentialRewardsPageProps> = ({ onNa
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-emerald-200/80">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-2 border-t border-emerald-200/80">
                 <div>
                   <span className="text-[10px] text-slate-500 uppercase font-semibold">Item</span>
                   <div className="font-bold text-slate-800 truncate">{successRedemption.reward_name}</div>

@@ -112,7 +112,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
       </div>
 
       {/* Decorative Subtle Background Glow */}
-      <div className="relative isolate">
+      <div className="relative isolate overflow-hidden">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
@@ -127,19 +127,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
         </div>
 
         {/* HERO SECTION */}
-        <section className="relative pt-12 sm:pt-16 pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <section className="relative pt-8 sm:pt-16 pb-12 sm:pb-24 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
           <div className="text-center max-w-4xl mx-auto">
             {/* Small Badges */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="inline-flex flex-wrap items-center justify-center gap-2 mb-6"
+              className="inline-flex flex-wrap items-center justify-center gap-2 mb-4 sm:mb-6 max-w-full"
             >
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-100/90 dark:bg-emerald-950/70 border border-emerald-300/80 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-300 text-xs font-bold shadow-xs">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-emerald-100/90 dark:bg-emerald-950/70 border border-emerald-300/80 dark:border-emerald-700/60 text-emerald-900 dark:text-emerald-300 text-[11px] sm:text-xs font-bold shadow-xs">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>{t('landing.badge')}</span>
               </span>
-              <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-semibold border border-slate-200 dark:border-slate-700">
+              <span className="inline-flex items-center gap-1 px-3 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[11px] sm:text-xs font-semibold border border-slate-200 dark:border-slate-700">
                 <span>🏙️ {t('landing.bengaluru_sub')}</span>
               </span>
             </motion.div>
@@ -149,7 +149,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-4xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.08]"
+              className="text-2xl sm:text-5xl lg:text-6xl xl:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-tight sm:leading-[1.08] break-words max-w-full"
             >
               {t('landing.hero_title')}{' '}
               <span className="block sm:inline text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-300">
@@ -162,7 +162,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="mt-6 text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto"
+              className="mt-4 sm:mt-6 text-xs sm:text-base md:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl mx-auto px-1 sm:px-0 break-words"
             >
               {t('landing.hero_desc')}
             </motion.p>
@@ -172,17 +172,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="mt-8 flex flex-wrap items-center justify-center gap-3.5"
+              className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-3.5 w-full max-w-xl mx-auto"
             >
               {/* PRIMARY CTA: Access Citizen Portal */}
               <button
                 type="button"
                 onClick={() => onNavigate('/login')}
-                className="px-7 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-2xl text-sm font-extrabold shadow-lg shadow-emerald-700/25 dark:shadow-emerald-950/60 hover:shadow-xl hover:shadow-emerald-700/30 ring-2 ring-emerald-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 cursor-pointer border border-emerald-500/30"
+                className="w-full sm:w-auto px-5 sm:px-7 py-3.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-2xl text-xs sm:text-sm font-extrabold shadow-lg shadow-emerald-700/25 dark:shadow-emerald-950/60 hover:shadow-xl hover:shadow-emerald-700/30 ring-2 ring-emerald-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 sm:gap-2.5 cursor-pointer border border-emerald-500/30 max-w-full"
               >
-                <Leaf className="w-4 h-4 text-emerald-200" />
-                <span>{t('landing.cta_citizen')}</span>
-                <ArrowRight className="w-4 h-4 text-emerald-200" />
+                <Leaf className="w-4 h-4 text-emerald-200 shrink-0" />
+                <span className="truncate">{t('landing.cta_citizen')}</span>
+                <ArrowRight className="w-4 h-4 text-emerald-200 shrink-0" />
               </button>
 
               {/* SECONDARY CTA: View How It Works */}
@@ -192,25 +192,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                   const el = document.getElementById('how-it-works');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="px-6 py-3.5 bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-4 sm:px-6 py-3.5 bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs sm:text-sm font-bold shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer max-w-full"
               >
-                <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>{t('landing.cta_how_it_works')}</span>
+                <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="truncate">{t('landing.cta_how_it_works')}</span>
               </button>
 
               {/* HACKATHON GUIDED TOUR CTA */}
               <button
                 type="button"
                 onClick={onOpenDemoTour}
-                className="px-5 py-3.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/80 rounded-2xl text-sm font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto px-4 sm:px-5 py-3.5 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 border border-emerald-200/80 dark:border-emerald-800/80 rounded-2xl text-xs sm:text-sm font-bold shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer max-w-full"
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>{t('landing.cta_tour')}</span>
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span className="truncate">{t('landing.cta_tour')}</span>
               </button>
             </motion.div>
 
             {/* Quick Demo Credentials Bar */}
-            <div className="mt-8 p-3.5 bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs max-w-xl mx-auto flex flex-wrap items-center justify-around gap-2 text-xs">
+            <div className="mt-6 sm:mt-8 p-3 sm:p-3.5 bg-white dark:bg-slate-900/90 rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xs max-w-xl mx-auto flex flex-wrap items-center justify-center sm:justify-around gap-2 text-xs">
               <span className="font-semibold text-slate-500 dark:text-slate-400">{t('landing.quick_test')}</span>
               <button
                 onClick={() => onNavigate('/login')}
@@ -235,10 +235,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.35 }}
-              className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/90 dark:border-slate-800 shadow-xl flex flex-col justify-between"
+              className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-slate-200/90 dark:border-slate-800 shadow-xl flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                   <span className="text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
                     {t('landing.lifecycle_badge')}
                   </span>
@@ -247,46 +247,46 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                   </span>
                 </div>
 
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                <h3 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight break-words">
                   {t('landing.lifecycle_title')}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed break-words">
                   Every gram of household waste is certified at your doorstep and digitally transformed into civic ration purchasing power.
                 </p>
               </div>
 
               {/* Visual Flow diagram */}
-              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-5 gap-2 text-center items-center">
+              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 grid grid-cols-5 gap-1 sm:gap-2 text-center items-center">
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs shadow-2xs">
-                    <Zap className="w-5 h-5" />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs shadow-2xs">
+                    <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1.5">Citizen</span>
-                  <span className="text-[9px] text-slate-400">Meter ID</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1.5">Citizen</span>
+                  <span className="text-[8px] sm:text-[9px] text-slate-400">Meter ID</span>
                 </div>
 
-                <div className="text-slate-300 dark:text-slate-700 font-bold">→</div>
+                <div className="text-slate-300 dark:text-slate-700 font-bold text-xs sm:text-sm">→</div>
 
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-2xl bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-400 flex items-center justify-center font-bold text-xs shadow-2xs">
-                    <Scale className="w-5 h-5" />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-teal-50 dark:bg-teal-950/50 border border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-400 flex items-center justify-center font-bold text-xs shadow-2xs">
+                    <Scale className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1.5">Weighed</span>
-                  <span className="text-[9px] text-slate-400">Certified Net</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1.5">Weighed</span>
+                  <span className="text-[8px] sm:text-[9px] text-slate-400">Certified</span>
                 </div>
 
-                <div className="text-slate-300 dark:text-slate-700 font-bold">→</div>
+                <div className="text-slate-300 dark:text-slate-700 font-bold text-xs sm:text-sm">→</div>
 
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shadow-2xs">
-                    <Gift className="w-5 h-5" />
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-xs shadow-2xs">
+                    <Gift className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1.5">Redeem</span>
-                  <span className="text-[9px] text-slate-400">Staples</span>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1.5">Redeem</span>
+                  <span className="text-[8px] sm:text-[9px] text-slate-400">Staples</span>
                 </div>
               </div>
 
-              <div className="mt-6 p-3 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/70 dark:border-emerald-800/50 flex items-center justify-between text-xs">
+              <div className="mt-6 p-3 bg-emerald-50/70 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/70 dark:border-emerald-800/50 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <span className="text-emerald-900 dark:text-emerald-200 font-medium">
                   Zero Cash Owed • 100% Escrow Backed
                 </span>
@@ -301,21 +301,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="lg:col-span-5 bg-gradient-to-br from-emerald-900 via-emerald-950 to-slate-950 text-white rounded-3xl p-6 sm:p-7 border border-emerald-700/40 shadow-2xl flex flex-col justify-between relative overflow-hidden"
+              className="lg:col-span-5 bg-gradient-to-br from-emerald-900 via-emerald-950 to-slate-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 border border-emerald-700/40 shadow-2xl flex flex-col justify-between relative overflow-hidden"
             >
               {/* Background ambient pattern */}
               <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
 
               <div>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <span className="text-xs font-black uppercase tracking-wider text-emerald-300 bg-emerald-800/60 px-3 py-1 rounded-full border border-emerald-600/40 flex items-center gap-1.5">
-                    <Coins className="w-3.5 h-3.5 text-amber-300" />
+                    <Coins className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                     <span>{t('landing.gp_card_title')}</span>
                   </span>
                   <span className="text-[11px] text-emerald-200/70 font-mono">CPCB R-RATE</span>
                 </div>
 
-                <p className="text-xs text-emerald-100/80 leading-relaxed">
+                <p className="text-xs text-emerald-100/80 leading-relaxed break-words">
                   {t('landing.gp_card_sub')}
                 </p>
 
@@ -347,7 +347,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                 </div>
               </div>
 
-              <div className="mt-5 pt-4 border-t border-emerald-800/60 flex items-center justify-between text-xs">
+              <div className="mt-5 pt-4 border-t border-emerald-800/60 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <span className="text-[11px] text-emerald-200">
                   {t('landing.gp_redeem_hint')}
                 </span>
@@ -366,17 +366,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
       </div>
 
       {/* SECTION: ESSENTIAL GOODS PREVIEW (5 Mini-Cards) */}
-      <section id="essential-goods" className="py-16 sm:py-20 bg-white dark:bg-slate-900 border-y border-slate-200/80 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-12">
+      <section id="essential-goods" className="py-12 sm:py-20 bg-white dark:bg-slate-900 border-y border-slate-200/80 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-black uppercase tracking-wider mb-3">
               <ShoppingBag className="w-3.5 h-3.5" />
               <span>{t('landing.goods_badge')}</span>
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight break-words">
               {t('landing.goods_title')}
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="mt-3 text-xs sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed break-words">
               {t('landing.goods_sub')}
             </p>
           </div>
@@ -390,7 +390,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.08 }}
-                className="bg-slate-50 dark:bg-slate-800/70 rounded-2xl p-5 border border-slate-200/90 dark:border-slate-700/80 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all flex flex-col justify-between group"
+                className="bg-slate-50 dark:bg-slate-800/70 rounded-2xl p-4 sm:p-5 border border-slate-200/90 dark:border-slate-700/80 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all flex flex-col justify-between group"
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
@@ -416,10 +416,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
             ))}
           </div>
 
-          <div className="mt-10 text-center">
+          <div className="mt-8 sm:mt-10 text-center">
             <button
               onClick={() => onNavigate('/login')}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-2xl text-xs font-extrabold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3 bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-slate-900 rounded-2xl text-xs font-extrabold shadow-sm transition-all cursor-pointer max-w-full"
             >
               <span>{t('landing.goods_browse_cta')}</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -429,16 +429,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
       </section>
 
       {/* SECTION: HOW IT WORKS (4 Steps with connecting flow) */}
-      <section id="how-it-works" className="py-16 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-14 sm:mb-18">
+      <section id="how-it-works" className="py-12 sm:py-24 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-18">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 dark:bg-teal-950/70 border border-teal-200 dark:border-teal-800 text-teal-800 dark:text-teal-300 text-xs font-black uppercase tracking-wider mb-3">
             <Recycle className="w-3.5 h-3.5" />
             <span>{t('landing.how_badge')}</span>
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight break-words">
             {t('landing.how_title')}
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+          <p className="mt-3 text-xs sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed break-words">
             {t('landing.how_sub')}
           </p>
         </div>
@@ -458,7 +458,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: idx * 0.1 }}
-                  className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-md hover:shadow-xl transition-all flex flex-col items-center text-center group"
+                  className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-800 shadow-md hover:shadow-xl transition-all flex flex-col items-center text-center group"
                 >
                   <div className="relative mb-4">
                     <div className={`w-14 h-14 rounded-2xl ${step.iconBg} flex items-center justify-center shadow-md group-hover:scale-110 transition-transform duration-200`}>
@@ -469,10 +469,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-black text-slate-900 dark:text-white mt-1">
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white mt-1 break-words">
                     {step.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed break-words">
                     {step.desc}
                   </p>
                 </motion.div>
@@ -483,17 +483,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
       </section>
 
       {/* SECTION: CIVIC INTELLIGENCE (BENTO GRID) */}
-      <section id="civic-tech" className="py-16 sm:py-20 bg-slate-100/70 dark:bg-slate-900/60 border-y border-slate-200/80 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-14">
+      <section id="civic-tech" className="py-12 sm:py-20 bg-slate-100/70 dark:bg-slate-900/60 border-y border-slate-200/80 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/70 border border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 text-xs font-black uppercase tracking-wider mb-3">
               <Cpu className="w-3.5 h-3.5" />
               <span>{t('landing.bento_badge')}</span>
             </span>
-            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight break-words">
               {t('landing.bento_title')}
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+            <p className="mt-3 text-xs sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed break-words">
               {t('landing.bento_sub')}
             </p>
           </div>
@@ -501,29 +501,29 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
           {/* Bento Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {/* HERO BENTO CARD: Waste Accountability (Span 2) */}
-            <div className="md:col-span-2 lg:col-span-2 bg-white dark:bg-slate-900 rounded-3xl p-7 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
+            <div className="md:col-span-2 lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-7 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
               <div>
                 <div className="w-11 h-11 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center mb-4">
                   <ShieldCheck className="w-6 h-6" />
                 </div>
-                <h4 className="font-black text-xl text-slate-900 dark:text-white">
+                <h4 className="font-black text-lg sm:text-xl text-slate-900 dark:text-white break-words">
                   {t('landing.bento_hero_title')}
                 </h4>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-2.5 leading-relaxed break-words">
                   {t('landing.bento_hero_desc')}
                 </p>
               </div>
 
-              <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-2 text-center">
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+              <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-1.5 sm:gap-2 text-center">
+                <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
                   <span className="text-[10px] text-slate-400 uppercase font-bold">Isolation</span>
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">Strict Tenant</p>
                 </div>
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+                <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
                   <span className="text-[10px] text-slate-400 uppercase font-bold">Accuracy</span>
                   <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">Zero-Ghost</p>
                 </div>
-                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
+                <div className="p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60">
                   <span className="text-[10px] text-slate-400 uppercase font-bold">Auth</span>
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-0.5">Meter-Bound</p>
                 </div>
@@ -531,80 +531,80 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
             </div>
 
             {/* BENTO CARD 2: AI-Assisted Classification */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-2xl bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 flex items-center justify-center mb-4">
                   <Cpu className="w-5 h-5" />
                 </div>
-                <h4 className="font-bold text-base text-slate-900 dark:text-white">
+                <h4 className="font-bold text-base text-slate-900 dark:text-white break-words">
                   {t('landing.bento_ai_title')}
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed break-words">
                   {t('landing.bento_ai_desc')}
                 </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px]">
                 <span className="text-slate-500">Human Confirmation</span>
                 <span className="text-teal-600 dark:text-teal-400 font-bold">94% Confidence</span>
               </div>
             </div>
 
             {/* BENTO CARD 3: BBMP Ward Intelligence */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-2xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center mb-4">
                   <BarChart3 className="w-5 h-5" />
                 </div>
-                <h4 className="font-bold text-base text-slate-900 dark:text-white">
+                <h4 className="font-bold text-base text-slate-900 dark:text-white break-words">
                   {t('landing.bento_ward_title')}
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed break-words">
                   {t('landing.bento_ward_desc')}
                 </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px]">
                 <span className="text-slate-500">Zonal Analytics</span>
                 <span className="text-emerald-600 dark:text-emerald-400 font-bold">198 Wards</span>
               </div>
             </div>
 
             {/* BENTO CARD 4: Immutable Civic Audit Trail */}
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-2xl bg-indigo-100 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-300 flex items-center justify-center mb-4">
                   <Database className="w-5 h-5" />
                 </div>
-                <h4 className="font-bold text-base text-slate-900 dark:text-white">
+                <h4 className="font-bold text-base text-slate-900 dark:text-white break-words">
                   {t('landing.bento_audit_title')}
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed break-words">
                   {t('landing.bento_audit_desc')}
                 </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px]">
                 <span className="text-slate-500">Integrity</span>
                 <span className="text-indigo-600 dark:text-indigo-400 font-bold">Tamper-Evident</span>
               </div>
             </div>
 
             {/* BENTO CARD 5: Offline-First Field Operations (Span 2 on lg) */}
-            <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
+            <div className="md:col-span-2 lg:col-span-3 bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-2xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center justify-center mb-4">
                   <Globe className="w-5 h-5" />
                 </div>
-                <h4 className="font-bold text-base text-slate-900 dark:text-white">
+                <h4 className="font-bold text-base text-slate-900 dark:text-white break-words">
                   {t('landing.bento_offline_title')}
                 </h4>
-                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed break-words">
                   {t('landing.bento_offline_desc')}
                 </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px]">
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px]">
                 <span className="text-slate-500">Zero-Network Mode</span>
                 <span className="text-amber-600 dark:text-amber-400 font-bold">UUID Auto-Sync</span>
               </div>
@@ -614,37 +614,37 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
       </section>
 
       {/* FINAL PRE-FOOTER CTA SECTION */}
-      <section className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="bg-gradient-to-br from-emerald-800 via-emerald-900 to-slate-950 text-white rounded-3xl p-8 sm:p-14 shadow-2xl relative overflow-hidden">
+      <section className="py-12 sm:py-20 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 text-center">
+        <div className="bg-gradient-to-br from-emerald-800 via-emerald-900 to-slate-950 text-white rounded-2xl sm:rounded-3xl p-5 sm:p-14 shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-5xl font-black tracking-tight leading-tight break-words">
             Ready to Transform Your Household Waste?
           </h2>
-          <p className="text-emerald-100/80 text-sm sm:text-base mt-4 max-w-xl mx-auto leading-relaxed">
+          <p className="text-emerald-100/80 text-xs sm:text-base mt-4 max-w-xl mx-auto leading-relaxed break-words">
             Join Bengaluru citizens earning Green Points every morning for verified, segregated waste collections.
           </p>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md mx-auto">
             <button
               onClick={() => onNavigate('/register')}
-              className="px-7 py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 rounded-2xl text-sm font-extrabold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-5 sm:px-7 py-3 sm:py-3.5 bg-white hover:bg-emerald-50 text-emerald-950 rounded-2xl text-xs sm:text-sm font-extrabold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 cursor-pointer max-w-full"
             >
-              <span>{t('auth.btn_create_account')}</span>
-              <ArrowRight className="w-4 h-4" />
+              <span className="truncate">{t('auth.btn_create_account')}</span>
+              <ArrowRight className="w-4 h-4 shrink-0" />
             </button>
             <button
               onClick={() => onNavigate('/login')}
-              className="px-7 py-3.5 bg-emerald-950/60 hover:bg-emerald-950 text-white border border-emerald-500/40 rounded-2xl text-sm font-bold transition-all flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-5 sm:px-7 py-3 sm:py-3.5 bg-emerald-950/60 hover:bg-emerald-950 text-white border border-emerald-500/40 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer max-w-full"
             >
-              <span>{t('landing.cta_citizen')}</span>
+              <span className="truncate">{t('landing.cta_citizen')}</span>
             </button>
           </div>
         </div>
       </section>
 
       {/* POLISHED CIVIC FOOTER */}
-      <footer className="bg-slate-950 text-slate-400 py-14 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
+      <footer className="bg-slate-950 text-slate-400 py-12 sm:py-14 px-3 sm:px-6 lg:px-8 border-t border-slate-800">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 pb-10 border-b border-slate-900">
           {/* Col 1: Branding */}
           <div className="md:col-span-1 space-y-3">
@@ -765,9 +765,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 text-center sm:text-left">
-          <span>{t('landing.footer_prototype_note')}</span>
-          <span>{t('app.prototype_disclaimer')}</span>
+        <div className="max-w-7xl mx-auto mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 text-center sm:text-left break-words">
+          <span className="break-words max-w-full">{t('landing.footer_prototype_note')}</span>
+          <span className="break-words max-w-full">{t('app.prototype_disclaimer')}</span>
         </div>
       </footer>
     </div>

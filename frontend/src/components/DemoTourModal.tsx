@@ -185,17 +185,17 @@ export const DemoTourModal: React.FC<DemoTourModalProps> = ({ isOpen, onClose, o
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xs">
         <motion.div
           initial={{ opacity: 0, scale: 0.93, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.93, y: 15 }}
-          className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-emerald-950/10 overflow-hidden relative"
+          className="bg-white rounded-2xl sm:rounded-3xl max-w-xl w-full p-4 sm:p-8 shadow-2xl border border-emerald-950/10 overflow-hidden relative max-h-[92vh] sm:max-h-[90vh] flex flex-col"
         >
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-100 shrink-0">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
@@ -212,7 +212,7 @@ export const DemoTourModal: React.FC<DemoTourModalProps> = ({ isOpen, onClose, o
           </div>
 
           {/* Progress Bar */}
-          <div className="w-full bg-gray-100 h-1.5 rounded-full my-4 overflow-hidden">
+          <div className="w-full bg-gray-100 h-1.5 rounded-full my-3 sm:my-4 overflow-hidden shrink-0">
             <div
               className="bg-emerald-600 h-full transition-all duration-300 rounded-full"
               style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
@@ -220,8 +220,8 @@ export const DemoTourModal: React.FC<DemoTourModalProps> = ({ isOpen, onClose, o
           </div>
 
           {/* Content */}
-          <div className="py-2">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="py-2 overflow-y-auto flex-1">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span
                 className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                   current.role === 'CITIZEN'
@@ -242,29 +242,29 @@ export const DemoTourModal: React.FC<DemoTourModalProps> = ({ isOpen, onClose, o
               </span>
             </div>
 
-            <h4 className="text-lg font-bold text-gray-900 mt-2">{current.title}</h4>
+            <h4 className="text-base sm:text-lg font-bold text-gray-900 mt-2">{current.title}</h4>
             <p className="text-xs sm:text-sm text-gray-600 mt-2 leading-relaxed">
               {current.description}
             </p>
-          </div>
 
-          {/* Action Trigger Button */}
-          {current.actionText && (
-            <div className="mt-5 p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-950">
-                <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{t('tour.quick_nav')}</span>
+            {/* Action Trigger Button */}
+            {current.actionText && (
+              <div className="mt-4 sm:mt-5 p-3 sm:p-4 bg-emerald-50/60 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+                <div className="flex items-center gap-2 text-xs font-semibold text-emerald-950">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{t('tour.quick_nav')}</span>
+                </div>
+                <button
+                  onClick={handleStepAction}
+                  disabled={isPerforming}
+                  className="w-full sm:w-auto px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-50"
+                >
+                  {isPerforming ? t('tour.switching') : current.actionText}
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
-              <button
-                onClick={handleStepAction}
-                disabled={isPerforming}
-                className="px-4 py-2 bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-50"
-              >
-                {isPerforming ? t('tour.switching') : current.actionText}
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Footer Controls */}
           <div className="pt-6 border-t border-gray-100 flex items-center justify-between mt-5">

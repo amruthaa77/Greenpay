@@ -59,12 +59,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                   animate={{ x: 0 }}
                   exit={{ x: '-100%' }}
                   transition={{ duration: 0.22, ease: 'easeOut' }}
-                  className="relative z-10 w-72 max-w-[80vw] h-full bg-white shadow-2xl flex flex-col"
+                  className="relative z-10 w-72 max-w-[85vw] h-full bg-white dark:bg-slate-900 shadow-2xl flex flex-col"
                 >
                   <div className="absolute top-4 right-4 z-20">
                     <button
                       onClick={() => setMobileMenuOpen(false)}
-                      className="p-1.5 text-slate-400 hover:text-slate-800 rounded-xl bg-slate-100"
+                      className="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 rounded-xl bg-slate-100 dark:bg-slate-800"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -90,7 +90,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           </AnimatePresence>
 
           {/* Right Main Column */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
             <Navbar
               currentRoute={currentRoute}
               onNavigate={onNavigate}
@@ -100,14 +100,14 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               mobileMenuOpen={mobileMenuOpen}
             />
 
-            <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto animate-in fade-in duration-200">
+            <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto min-w-0 overflow-x-hidden animate-in fade-in duration-200">
               {children}
             </main>
           </div>
         </div>
       ) : (
         /* Public Layout (Landing, Login, Register) */
-        <div className="flex-1 flex flex-col min-h-screen">
+        <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
           <Navbar
             currentRoute={currentRoute}
             onNavigate={onNavigate}
@@ -115,7 +115,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
             onOpenDemoTour={() => setDemoTourOpen(true)}
           />
 
-          <main className="flex-1">
+          <main className="flex-1 min-w-0 overflow-x-hidden">
             {children}
           </main>
         </div>

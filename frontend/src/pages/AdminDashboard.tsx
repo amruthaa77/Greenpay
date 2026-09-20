@@ -158,7 +158,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
       />
 
       {/* 5 Executive Command KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
         <StatCard
           title="Total Waste"
           value={`${kpis?.total_waste_recorded_kg ?? 0} kg`}
@@ -203,12 +203,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
       {/* Analytics Grid: Waste Trend + Ward Distribution */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Waste Collection Trend (Recharts AreaChart) */}
-        <div className="lg:col-span-8">
+        <div className="lg:col-span-8 min-w-0">
           <ChartCard
             title="Waste Collection & Green Points Trend"
             subtitle="Daily kilograms weighed and Green Points allocated"
           >
-            <div className="h-72 w-full pt-3">
+            <div className="h-60 sm:h-72 w-full pt-3 min-w-0">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={trendData}>
                   <defs>
@@ -244,7 +244,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
         </div>
 
         {/* Ward Intelligence Snapshot */}
-        <div className="lg:col-span-4">
+        <div className="lg:col-span-4 min-w-0">
           <Card className="h-full flex flex-col justify-between">
             <CardHeader className="flex items-center justify-between">
               <div>

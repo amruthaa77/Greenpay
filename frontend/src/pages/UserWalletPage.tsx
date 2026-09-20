@@ -106,7 +106,7 @@ export const UserWalletPage: React.FC<UserWalletPageProps> = ({ onNavigate }) =>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 shrink-0">
-            <div className="grid grid-cols-2 gap-4 bg-white/5 p-4 sm:p-6 rounded-2xl border border-white/10 shrink-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white/5 p-3.5 sm:p-6 rounded-2xl border border-white/10 shrink-0">
               <div className="p-3 bg-white/5 rounded-xl">
                 <span className="text-[11px] text-emerald-200 font-medium">{t('wallet.total_credits') || 'Total Earned'}</span>
                 <p className="text-xl sm:text-2xl font-black text-emerald-400 mt-1">
@@ -124,7 +124,7 @@ export const UserWalletPage: React.FC<UserWalletPageProps> = ({ onNavigate }) =>
             <div className="flex flex-col justify-center">
               <button
                 onClick={() => onNavigate && onNavigate('/rewards')}
-                className="px-5 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl text-xs transition-all shadow-md hover:scale-102 active:scale-98 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 py-3.5 sm:py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl text-xs transition-all shadow-md hover:scale-102 active:scale-98 flex items-center justify-center gap-2"
               >
                 <ShoppingBag className="w-4 h-4" />
                 <span>{t('rewards.browse_catalogue') || 'Browse Catalogue'}</span>

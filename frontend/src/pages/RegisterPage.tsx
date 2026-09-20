@@ -117,12 +117,12 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
   };
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 py-10 bg-slate-50/70">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-3 sm:p-4 py-6 sm:py-10 bg-slate-50/70">
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
-        className="w-full max-w-xl bg-white rounded-3xl p-6 sm:p-10 shadow-xl border border-slate-200/80 relative"
+        className="w-full max-w-xl bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-10 shadow-xl border border-slate-200/80 relative"
       >
         {/* Header */}
         <div className="text-center mb-8">
@@ -153,7 +153,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
               <span className="text-[10px] text-slate-400 font-semibold uppercase">Step 1 of 4</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-100 rounded-2xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 p-1.5 bg-slate-100 rounded-2xl">
               <button
                 type="button"
                 onClick={() => setUserType('Individual')}
@@ -364,11 +364,11 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onNavigate }) => {
             type="submit"
             variant="primary"
             size="lg"
-            className="w-full mt-4"
+            className="w-full max-w-full mt-4 py-3 sm:py-3.5 px-4 text-xs sm:text-base font-extrabold shadow-md active:scale-[0.99] flex items-center justify-center text-center"
             isLoading={loading}
-            rightIcon={<ArrowRight className="w-4 h-4" />}
+            rightIcon={<ArrowRight className="w-4 h-4 shrink-0" />}
           >
-            {loading ? t('auth.btn_creating_account') : t('auth.btn_create_account')}
+            <span className="truncate">{loading ? t('auth.btn_creating_account') : t('auth.btn_create_account')}</span>
           </Button>
         </form>
 

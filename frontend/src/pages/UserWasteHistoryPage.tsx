@@ -120,11 +120,12 @@ export const UserWasteHistoryPage: React.FC = () => {
                 className="flex-1 sm:flex-initial py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
               >
                 <option value="All">{t('filter.all_waste_types')}</option>
-                <option value="Recyclable">Recyclable</option>
-                <option value="Wet Waste">Wet Waste</option>
+                <option value="Paper & Cardboard">📦 Paper & Cardboard</option>
+                <option value="Recyclable Metals & Cans">🥫 Recyclable Metals & Cans</option>
+                <option value="Clean Plastic Packaging">🧴 Clean Plastic Packaging</option>
+                <option value="Contaminated Waste">⚠️ Contaminated Waste</option>
                 <option value="Dry Waste">Dry Waste</option>
-                <option value="Non-Recyclable">Non-Recyclable</option>
-                <option value="Contaminated Waste">Contaminated Waste</option>
+                <option value="Recyclable">Recyclable</option>
               </select>
 
               <select

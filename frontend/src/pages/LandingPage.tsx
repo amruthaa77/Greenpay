@@ -33,35 +33,35 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemoTour }) => {
   const { language, setLanguage, t } = useLanguage();
 
-  // 4-Step Process
+  // 4-Step Process (Dry Waste Focus)
   const steps = [
     {
       num: t('landing.step1_num') || '01',
-      title: t('landing.step1_title') || 'Segregate',
-      desc: t('landing.step1_desc') || 'Separate wet, dry, and recyclable waste at source before doorstep handover.',
+      title: t('landing.step1_title') || 'Segregate Dry Recyclables',
+      desc: t('landing.step1_desc') || 'Sort clean dry waste (paper, cardboards, plastic bottles, wrappers, metal cans) at source. Keep wet organic waste separate.',
       icon: Recycle,
       badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
       iconBg: 'bg-emerald-600 text-white',
     },
     {
       num: t('landing.step2_num') || '02',
-      title: t('landing.step2_title') || 'Verify',
-      desc: t('landing.step2_desc') || 'Municipal collector certifies weight and segregation quality via digital scale.',
+      title: t('landing.step2_title') || 'Verify Dry Weight',
+      desc: t('landing.step2_desc') || 'Municipal collector certifies dry recyclable weight and checks for zero food/wet contamination.',
       icon: Scale,
       badgeColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950/80 dark:text-teal-300 border-teal-200 dark:border-teal-800',
       iconBg: 'bg-teal-600 text-white',
     },
     {
       num: t('landing.step3_num') || '03',
-      title: t('landing.step3_title') || 'Earn',
-      desc: t('landing.step3_desc') || 'Green Points are mathematically computed and credited instantly to your meter wallet.',
+      title: t('landing.step3_title') || 'Earn Green Points',
+      desc: t('landing.step3_desc') || 'Green Points are mathematically computed per dry tier and credited instantly to your meter wallet.',
       icon: Leaf,
       badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
       iconBg: 'bg-emerald-700 text-white',
     },
     {
       num: t('landing.step4_num') || '04',
-      title: t('landing.step4_title') || 'Redeem',
+      title: t('landing.step4_title') || 'Redeem Staples',
       desc: t('landing.step4_desc') || 'Exchange accumulated Green Points for essential groceries at your ward distribution hub.',
       icon: Gift,
       badgeColor: 'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300 border-amber-200 dark:border-amber-800',
@@ -226,6 +226,61 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                 {t('landing.quick_supervisor')}
               </button>
             </div>
+
+            {/* ACCEPTED DRY ITEMS ONLY SHOWCASE */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.32 }}
+              className="mt-6 sm:mt-8 p-4 sm:p-5 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md rounded-2xl border border-emerald-200/80 dark:border-emerald-800/60 shadow-md max-w-3xl mx-auto"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[11px] font-black uppercase tracking-wider border border-emerald-300 dark:border-emerald-700">
+                    Dry Waste Only
+                  </span>
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                    {t('landing.accepted_items_title') || 'Accepted Dry Recyclables Only'}
+                  </span>
+                </div>
+                <span className="text-[11px] font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-900">
+                  🚫 No Wet / Organic Food Waste
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 sm:gap-2.5 pt-1">
+                <div className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 text-center">
+                  <span className="text-xl">📦</span>
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Cardboard</span>
+                  <span className="text-[9px] text-slate-400">Boxes & cartons</span>
+                </div>
+                <div className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 text-center">
+                  <span className="text-xl">📰</span>
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Paper</span>
+                  <span className="text-[9px] text-slate-400">Newspapers</span>
+                </div>
+                <div className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 text-center">
+                  <span className="text-xl">🧴</span>
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Plastics</span>
+                  <span className="text-[9px] text-slate-400">Bottles & HDPE</span>
+                </div>
+                <div className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 text-center">
+                  <span className="text-xl">🥨</span>
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Chips Packets</span>
+                  <span className="text-[9px] text-slate-400">Clean wrappers</span>
+                </div>
+                <div className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 text-center">
+                  <span className="text-xl">🥫</span>
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Metal Cans</span>
+                  <span className="text-[9px] text-slate-400">Aluminum & tins</span>
+                </div>
+                <div className="flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 text-center">
+                  <span className="text-xl">📄</span>
+                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1">Clean Foil</span>
+                  <span className="text-[9px] text-slate-400">Unsoiled foil</span>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
           {/* HERO VISUAL: Closed-Loop Ecosystem & Live Green Points Visual Card */}
@@ -251,7 +306,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                   {t('landing.lifecycle_title')}
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed break-words">
-                  Every gram of household waste is certified at your doorstep and digitally transformed into civic ration purchasing power.
+                  Every gram of household dry recyclables is certified at your doorstep and digitally transformed into civic ration purchasing power.
                 </p>
               </div>
 
@@ -272,7 +327,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                     <Scale className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <span className="text-[10px] sm:text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-1.5">Weighed</span>
-                  <span className="text-[8px] sm:text-[9px] text-slate-400">Certified</span>
+                  <span className="text-[8px] sm:text-[9px] text-slate-400">Dry Recyclables</span>
                 </div>
 
                 <div className="text-slate-300 dark:text-slate-700 font-bold text-xs sm:text-sm">→</div>
@@ -319,30 +374,60 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
                   {t('landing.gp_card_sub')}
                 </p>
 
-                {/* Point reward tier lines */}
+                {/* Point reward tier lines - Exclusive Dry Waste Breakdown */}
                 <div className="mt-4 space-y-2.5">
-                  <div className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🥗</span>
-                      <span className="text-xs font-bold text-white">{t('landing.gp_wet')}</span>
+                  {/* Tier 1: Paper & Cardboard */}
+                  <div className="p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📦</span>
+                        <span className="text-xs font-bold text-white">
+                          {t('landing.gp_paper_label') || '+25 GP • Clean Paper & Cardboards'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                        +25 GP
+                      </span>
                     </div>
-                    <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30">+25 GP</span>
+                    <p className="text-[11px] text-emerald-200/75 ml-7">
+                      {t('landing.gp_paper_desc') || 'Newspapers, notebooks, flattened cardboard boxes.'}
+                    </p>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">📦</span>
-                      <span className="text-xs font-bold text-white">{t('landing.gp_dry')}</span>
+                  {/* Tier 2: Recyclable Metals & Cans */}
+                  <div className="p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🥫</span>
+                        <span className="text-xs font-bold text-white">
+                          {t('landing.gp_metals_label') || '+50 GP • Metal Cans & Foil'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                        +50 GP
+                      </span>
                     </div>
-                    <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30">+50 GP</span>
+                    <p className="text-[11px] text-emerald-200/75 ml-7">
+                      {t('landing.gp_metals_desc') || 'Clean aluminum cans, metal tins, clean foil.'}
+                    </p>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🧴</span>
-                      <span className="text-xs font-bold text-white">{t('landing.gp_plastics')}</span>
+                  {/* Tier 3: Clean Plastic Packaging */}
+                  <div className="p-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 transition-colors flex flex-col gap-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🧴</span>
+                        <span className="text-xs font-bold text-white">
+                          {t('landing.gp_plastics_label') || '+100 GP • Bulk Clean Plastic Packaging'}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30">
+                        +100 GP
+                      </span>
                     </div>
-                    <span className="text-[10px] font-mono text-emerald-300 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-500/30">+100 GP</span>
+                    <p className="text-[11px] text-emerald-200/75 ml-7">
+                      {t('landing.gp_plastics_desc') || 'Plastic bottles, rigid containers, clean chip packets, and wrappers.'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -619,10 +704,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
           <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <h2 className="text-2xl sm:text-5xl font-black tracking-tight leading-tight break-words">
-            Ready to Transform Your Household Waste?
+            Ready to Transform Your Household Dry Waste?
           </h2>
           <p className="text-emerald-100/80 text-xs sm:text-base mt-4 max-w-xl mx-auto leading-relaxed break-words">
-            Join Bengaluru citizens earning Green Points every morning for verified, segregated waste collections.
+            Join Bengaluru citizens earning Green Points every morning for verified, segregated dry recyclable collections.
           </p>
 
           <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full max-w-md mx-auto">

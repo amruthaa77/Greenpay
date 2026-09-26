@@ -11,25 +11,32 @@ class AIClassifierService:
 
     CATALOG: Dict[str, Dict[str, Any]] = {
         "plastic_bottle": {
-            "detected_object": "PET Polyethylene Terephthalate Bottle",
-            "predicted_category": "Recyclable",
+            "detected_object": "PET Bottle / Dry Plastic Wrapper / Chips Packet",
+            "predicted_category": "Clean Plastic Packaging",
             "confidence": 0.94,
-            "visual_indicators": ["Transparent polymer", "Resin Identification Code 1", "Clean dry state"],
-            "suggested_action": "Crush bottle and record in Recyclable category"
+            "visual_indicators": ["Dry polymer / film packaging", "Clean unsoiled packaging", "Dry recyclables"],
+            "suggested_action": "Clean, dry, and record under Clean Plastic Packaging (+100 GP/kg)"
+        },
+        "metal_can": {
+            "detected_object": "Clean Aluminum Beverage Can / Tin Container / Foil",
+            "predicted_category": "Recyclable Metals & Cans",
+            "confidence": 0.95,
+            "visual_indicators": ["Clean metallic surface", "Aluminum / tin alloy", "Empty and dry state"],
+            "suggested_action": "Record under Recyclable Metals & Cans (+50 GP/kg)"
         },
         "cardboard_box": {
-            "detected_object": "Corrugated Cardboard Packaging",
-            "predicted_category": "Dry Waste",
-            "confidence": 0.91,
-            "visual_indicators": ["Cellulose fiber", "Unsoiled surface", "Flattenable"],
-            "suggested_action": "Bundle together and log under Dry Waste"
+            "detected_object": "Corrugated Cardboard / Paper / Newspaper",
+            "predicted_category": "Paper & Cardboard",
+            "confidence": 0.92,
+            "visual_indicators": ["Cellulose fiber", "Clean dry paper or cardboard", "Flattenable packaging"],
+            "suggested_action": "Flatten, bundle, and log under Paper & Cardboard (+25 GP/kg)"
         },
         "vegetable_scraps": {
-            "detected_object": "Organic Kitchen Produce Waste",
-            "predicted_category": "Wet Waste",
+            "detected_object": "Wet Organic Food / Kitchen Produce Waste",
+            "predicted_category": "Contaminated Waste",
             "confidence": 0.96,
-            "visual_indicators": ["High moisture content", "Biodegradable organic matter", "Kitchen greens"],
-            "suggested_action": "Direct to ward composting facility"
+            "visual_indicators": ["High moisture content", "Wet organic matter", "Non-dry waste item"],
+            "suggested_action": "REJECT: Wet organic waste is not accepted. GreenPay accepts Dry Waste only."
         },
         "e_waste_battery": {
             "detected_object": "Lithium-Ion Household Battery / Cell",
@@ -43,21 +50,21 @@ class AIClassifierService:
             "predicted_category": "Contaminated Waste",
             "confidence": 0.86,
             "visual_indicators": ["Food residue oil stains", "Non-recyclable polymer", "Cross-contamination"],
-            "suggested_action": "Log penalty deduction due to food grease contamination"
+            "suggested_action": "Reject or log penalty deduction due to wet/food grease contamination"
         },
         "glass_jar": {
-            "detected_object": "Flint Glass Container",
-            "predicted_category": "Recyclable",
+            "detected_object": "Clean Glass Container / Bottle",
+            "predicted_category": "Recyclable Metals & Cans",
             "confidence": 0.93,
-            "visual_indicators": ["Inert silicate", "Reusable/meltable", "Rinsed"],
-            "suggested_action": "Record as Recyclable glass fraction"
+            "visual_indicators": ["Inert silicate", "Clean dry state", "Rinsed dry recyclable"],
+            "suggested_action": "Record under hard dry recyclables"
         },
         "mixed_waste": {
-            "detected_object": "Unsorted Mixed Municipal Waste",
+            "detected_object": "Unsorted Mixed Municipal Waste / Wet-Contaminated",
             "predicted_category": "Contaminated Waste",
-            "confidence": 0.79,
-            "visual_indicators": ["Wet food commingled with dry paper", "Unsegregated at source"],
-            "suggested_action": "Flag for segregation advisory"
+            "confidence": 0.85,
+            "visual_indicators": ["Wet food commingled with dry paper", "Unsegregated wet matter"],
+            "suggested_action": "REJECT: Mixed or wet-contaminated waste is not accepted. GreenPay collects dry recyclables only."
         }
     }
 
@@ -73,11 +80,13 @@ class AIClassifierService:
                 break
         
         # Fallbacks for common search phrases
-        if "plastic" in ident_lower or "bottle" in ident_lower or "can" in ident_lower:
+        if "can" in ident_lower or "metal" in ident_lower or "tin" in ident_lower or "foil" in ident_lower:
+            key = "metal_can"
+        elif "plastic" in ident_lower or "bottle" in ident_lower or "chips" in ident_lower or "wrapper" in ident_lower:
             key = "plastic_bottle"
-        elif "organic" in ident_lower or "peel" in ident_lower or "wet" in ident_lower or "food" in ident_lower:
+        elif "organic" in ident_lower or "peel" in ident_lower or "wet" in ident_lower or "food" in ident_lower or "scrap" in ident_lower:
             key = "vegetable_scraps"
-        elif "paper" in ident_lower or "box" in ident_lower or "carton" in ident_lower:
+        elif "paper" in ident_lower or "box" in ident_lower or "carton" in ident_lower or "cardboard" in ident_lower or "newspaper" in ident_lower:
             key = "cardboard_box"
         elif "battery" in ident_lower or "chemical" in ident_lower or "electronic" in ident_lower:
             key = "e_waste_battery"

@@ -39,7 +39,7 @@ export const AdminWasteManagementPage: React.FC = () => {
   const { t, translateWasteType, translateClaimStatus } = useLanguage();
 
   const [meterNumber, setMeterNumber] = useState('');
-  const [wasteType, setWasteType] = useState<WasteType>('Recyclable');
+  const [wasteType, setWasteType] = useState<WasteType>('Paper & Cardboard');
   const [weightKg, setWeightKg] = useState<string>('');
   const [claimStatus, setClaimStatus] = useState<ClaimStatus>('Processed');
   const [feedback, setFeedback] = useState('');
@@ -56,20 +56,18 @@ export const AdminWasteManagementPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Live estimated reward calculation based on standard rate schedule
+  // Live estimated reward calculation based on dry waste rate schedule
   const getLiveCalculation = (type: WasteType, kgStr: string) => {
     const kg = parseFloat(kgStr);
     if (isNaN(kg) || kg <= 0) return { amount: 0, text: 'Enter weight to calculate estimated Green Points' };
 
     switch (type) {
-      case 'Recyclable':
-        return { amount: kg * 10.0, text: `${kg.toFixed(2)} kg × 10 GP/kg = +${(kg * 10.0).toFixed(1)} GP` };
-      case 'Wet Waste':
-        return { amount: kg * 5.0, text: `${kg.toFixed(2)} kg × 5 GP/kg = +${(kg * 5.0).toFixed(1)} GP` };
-      case 'Dry Waste':
-        return { amount: kg * 3.0, text: `${kg.toFixed(2)} kg × 3 GP/kg = +${(kg * 3.0).toFixed(1)} GP` };
-      case 'Non-Recyclable':
-        return { amount: kg * 1.0, text: `${kg.toFixed(2)} kg × 1 GP/kg = +${(kg * 1.0).toFixed(1)} GP` };
+      case 'Paper & Cardboard':
+        return { amount: kg * 25.0, text: `${kg.toFixed(2)} kg × 25 GP/kg = +${(kg * 25.0).toFixed(1)} GP` };
+      case 'Recyclable Metals & Cans':
+        return { amount: kg * 50.0, text: `${kg.toFixed(2)} kg × 50 GP/kg = +${(kg * 50.0).toFixed(1)} GP` };
+      case 'Clean Plastic Packaging':
+        return { amount: kg * 100.0, text: `${kg.toFixed(2)} kg × 100 GP/kg = +${(kg * 100.0).toFixed(1)} GP` };
       case 'Contaminated Waste':
         return { amount: -15.0, text: 'Contamination deduction: -15 GP flat penalty' };
       default:
@@ -241,11 +239,10 @@ export const AdminWasteManagementPage: React.FC = () => {
                     onChange={(e) => setWasteType(e.target.value as WasteType)}
                     className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-600/20"
                   >
-                    <option value="Recyclable">Recyclable (Plastic, Paper, Glass, Metals) - 10 GP/kg</option>
-                    <option value="Wet Waste">Wet Waste (Kitchen, Compostable Organic) - 5 GP/kg</option>
-                    <option value="Dry Waste">Dry Waste (Inert non-recyclable segregated) - 3 GP/kg</option>
-                    <option value="Non-Recyclable">Non-Recyclable (Mixed sanitary) - 1 GP/kg</option>
-                    <option value="Contaminated Waste">Contaminated Waste (Unsegregated) - 15 GP penalty</option>
+                    <option value="Paper & Cardboard">📦 Paper & Cardboard (Light Dry Waste) - 25 GP/kg</option>
+                    <option value="Recyclable Metals & Cans">🥫 Recyclable Metals & Cans (Hard Dry Waste) - 50 GP/kg</option>
+                    <option value="Clean Plastic Packaging">🧴 Clean Plastic Packaging (Flexible & Rigid) - 100 GP/kg</option>
+                    <option value="Contaminated Waste">⚠️ Contaminated Waste (Wet/Food residue) - 15 GP penalty</option>
                   </select>
                 </div>
 
@@ -318,27 +315,23 @@ export const AdminWasteManagementPage: React.FC = () => {
           {/* Rate Card Reference */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Official BBMP Green Points Schedule</CardTitle>
+              <CardTitle className="text-sm">Official BBMP Dry Waste Points Schedule</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-2 text-xs">
               <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600 font-medium">Recyclables</span>
-                <span className="font-bold text-emerald-800">10 GP / kg</span>
+                <span className="text-slate-600 font-medium">📦 Paper & Cardboard</span>
+                <span className="font-bold text-emerald-800">25 GP / kg</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600 font-medium">Wet Waste</span>
-                <span className="font-bold text-emerald-800">5 GP / kg</span>
+                <span className="text-slate-600 font-medium">🥫 Recyclable Metals & Cans</span>
+                <span className="font-bold text-emerald-800">50 GP / kg</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600 font-medium">Dry Waste</span>
-                <span className="font-bold text-emerald-800">3 GP / kg</span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-600 font-medium">Non-Recyclable</span>
-                <span className="font-bold text-emerald-800">1 GP / kg</span>
+                <span className="text-slate-600 font-medium">🧴 Clean Plastic Packaging</span>
+                <span className="font-bold text-emerald-800">100 GP / kg</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-600 font-medium">Contamination Penalty</span>
+                <span className="text-slate-600 font-medium">⚠️ Contamination Penalty</span>
                 <span className="font-bold text-rose-600">-15 GP flat</span>
               </div>
             </CardContent>
@@ -433,11 +426,12 @@ export const AdminWasteManagementPage: React.FC = () => {
               onChange={(e) => setSelectedPreset(e.target.value)}
               className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800"
             >
-              <option value="plastic_bottle">Crushed PET Plastic Bottle (Recyclable)</option>
-              <option value="cardboard_box">Corrugated Packaging Cardboard (Dry Waste)</option>
-              <option value="food_waste">Vegetable Scraps & Peelings (Wet Waste)</option>
-              <option value="e_waste">Consumer Lithium Battery / PCB (Hazardous)</option>
-              <option value="mixed_dirty">Contaminated Plastic with Liquid Residue</option>
+              <option value="plastic_bottle">Clean PET Bottles & Chips Wrappers (Clean Plastic Packaging)</option>
+              <option value="metal_can">Aluminum Beverage Cans & Tins (Recyclable Metals & Cans)</option>
+              <option value="cardboard_box">Corrugated Packaging & Newspapers (Paper & Cardboard)</option>
+              <option value="food_waste">Wet Kitchen Scraps (REJECT - Non-Accepted Wet Waste)</option>
+              <option value="e_waste">Consumer Lithium Battery / Cell (Hazardous Contamination)</option>
+              <option value="mixed_dirty">Food Grease Contaminated Container (Contaminated Waste)</option>
             </select>
           </div>
 

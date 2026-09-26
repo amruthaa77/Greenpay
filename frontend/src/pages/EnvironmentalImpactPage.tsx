@@ -117,7 +117,7 @@ export const EnvironmentalImpactPage: React.FC = () => {
                 Landfill Diversion (kg)
               </span>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Direct physical weight summation of verified recyclable, wet, and dry waste batches certified at BBMP collection centers.
+                Direct physical weight summation of verified dry recyclable batches (paper, cardboards, plastics, metal cans) certified at BBMP collection centers.
               </p>
             </div>
 

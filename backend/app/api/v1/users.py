@@ -291,14 +291,14 @@ def get_user_score_breakdown(
     entries = db.query(WasteEntry).filter(WasteEntry.user_id == current_user.id).all()
     total_e = max(len(entries), 1)
     contaminated = sum(1 for e in entries if e.waste_type == "Contaminated Waste")
-    recyclables = sum(1 for e in entries if e.waste_type in ["Recyclable", "Dry Waste"])
+    recyclables = sum(1 for e in entries if e.waste_type in ["Recyclable", "Dry Waste", "Paper & Cardboard", "Recyclable Metals & Cans", "Clean Plastic Packaging"])
 
     components = [
         ScoreBreakdownComponent(
             name="Segregation Quality",
             score=round(((total_e - contaminated) / total_e) * 35.0, 1),
             max_score=35.0,
-            description="Accurate sorting into Wet and Dry fractions without commingling.",
+            description="Accurate sorting of clean dry recyclables without contamination.",
         ),
         ScoreBreakdownComponent(
             name="Recyclable Contribution",

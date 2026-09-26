@@ -8,18 +8,20 @@ from app.models.waste import WasteEntry
 # Default fallbacks if rules are not yet customized in the DB
 DEFAULT_RATES = {
     "Individual": {
-        "Recyclable": {"rate_per_kg": 10.0, "penalty": 0.0},
-        "Wet Waste": {"rate_per_kg": 5.0, "penalty": 0.0},
-        "Dry Waste": {"rate_per_kg": 3.0, "penalty": 0.0},
-        "Non-Recyclable": {"rate_per_kg": 1.0, "penalty": 0.0},
+        "Paper & Cardboard": {"rate_per_kg": 25.0, "penalty": 0.0},
+        "Recyclable Metals & Cans": {"rate_per_kg": 50.0, "penalty": 0.0},
+        "Clean Plastic Packaging": {"rate_per_kg": 100.0, "penalty": 0.0},
         "Contaminated Waste": {"rate_per_kg": 0.0, "penalty": 15.0},
+        "Dry Waste": {"rate_per_kg": 25.0, "penalty": 0.0},
+        "Recyclable": {"rate_per_kg": 50.0, "penalty": 0.0},
     },
     "Commercial": {
-        "Recyclable": {"rate_per_kg": 8.0, "penalty": 0.0},
-        "Wet Waste": {"rate_per_kg": 4.0, "penalty": 0.0},
-        "Dry Waste": {"rate_per_kg": 2.5, "penalty": 0.0},
-        "Non-Recyclable": {"rate_per_kg": 0.5, "penalty": 0.0},
+        "Paper & Cardboard": {"rate_per_kg": 20.0, "penalty": 0.0},
+        "Recyclable Metals & Cans": {"rate_per_kg": 40.0, "penalty": 0.0},
+        "Clean Plastic Packaging": {"rate_per_kg": 80.0, "penalty": 0.0},
         "Contaminated Waste": {"rate_per_kg": 0.0, "penalty": 30.0},
+        "Dry Waste": {"rate_per_kg": 20.0, "penalty": 0.0},
+        "Recyclable": {"rate_per_kg": 40.0, "penalty": 0.0},
     },
 }
 
@@ -35,15 +37,17 @@ class RewardEngine:
         Calculate transparent reward or penalty.
         Returns: (amount, transaction_type, breakdown_string)
         """
-        rule = (
-            db.query(RewardRule)
-            .filter(
-                RewardRule.waste_type == waste_type,
-                RewardRule.user_type == user_type,
-                RewardRule.is_active == True,
+        rule = None
+        if db is not None:
+            rule = (
+                db.query(RewardRule)
+                .filter(
+                    RewardRule.waste_type == waste_type,
+                    RewardRule.user_type == user_type,
+                    RewardRule.is_active == True,
+                )
+                .first()
             )
-            .first()
-        )
 
         if rule:
             rate_per_kg = rule.rate_per_kg
@@ -114,23 +118,24 @@ class RewardEngine:
 
         total_entries = len(entries)
         contaminated_count = sum(1 for e in entries if e.waste_type == "Contaminated Waste")
-        recyclable_count = sum(1 for e in entries if e.waste_type in ["Recyclable", "Dry Waste"])
-        wet_count = sum(1 for e in entries if e.waste_type == "Wet Waste")
+        recyclable_count = sum(1 for e in entries if e.waste_type in [
+            "Paper & Cardboard",
+            "Recyclable Metals & Cans",
+            "Clean Plastic Packaging",
+            "Recyclable",
+            "Dry Waste"
+        ])
 
-        # Base 60
+        # Base 65
         score = 65.0
 
-        # Segregation Quality (max +15)
+        # Segregation Quality: clean dry recyclables vs contaminated (max +20)
         clean_ratio = (total_entries - contaminated_count) / max(total_entries, 1)
-        score += clean_ratio * 15.0
+        score += clean_ratio * 20.0
 
-        # Recyclable contribution (max +10)
+        # High-value dry recyclables volume contribution (max +10)
         rec_ratio = recyclable_count / max(total_entries, 1)
         score += rec_ratio * 10.0
-
-        # Wet Waste contribution (max +5)
-        wet_ratio = wet_count / max(total_entries, 1)
-        score += wet_ratio * 5.0
 
         # Contamination penalty (-12 per contaminated incident)
         score -= contaminated_count * 12.0

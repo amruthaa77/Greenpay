@@ -78,16 +78,14 @@ export const AdminWardIntelligencePage: React.FC = () => {
     );
   }
 
-  const totalWet = wardData.reduce((acc, w) => acc + (w.wet_waste_kg || 0), 0);
   const totalRecyclable = wardData.reduce((acc, w) => acc + (w.recyclable_waste_kg || 0), 0);
   const totalDry = wardData.reduce((acc, w) => acc + (w.dry_waste_kg || 0), 0);
   const totalContaminated = wardData.reduce((acc, w) => acc + (w.contaminated_waste_kg || 0), 0);
 
   const compositionData = [
-    { name: 'Wet Waste', value: totalWet },
-    { name: 'Recyclable', value: totalRecyclable },
-    { name: 'Dry Waste', value: totalDry },
-    { name: 'Contaminated', value: totalContaminated },
+    { name: 'Plastics & Metals (Rigid/Film)', value: totalRecyclable },
+    { name: 'Paper & Cardboard (Fiber)', value: totalDry },
+    { name: 'Contaminated Residue', value: totalContaminated },
   ];
 
   const wardComparisonData = wardData.map((w) => ({

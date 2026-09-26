@@ -772,8 +772,8 @@ def get_ward_analytics(
         entries = db.query(WasteEntry).filter(WasteEntry.ward_id == w.id).all()
         total_kg = sum(e.weight_kg for e in entries)
         wet_kg = sum(e.weight_kg for e in entries if e.waste_type == "Wet Waste")
-        dry_kg = sum(e.weight_kg for e in entries if e.waste_type == "Dry Waste")
-        rec_kg = sum(e.weight_kg for e in entries if e.waste_type == "Recyclable")
+        dry_kg = sum(e.weight_kg for e in entries if e.waste_type in ["Dry Waste", "Paper & Cardboard"])
+        rec_kg = sum(e.weight_kg for e in entries if e.waste_type in ["Recyclable", "Recyclable Metals & Cans", "Clean Plastic Packaging"])
         cont_kg = sum(e.weight_kg for e in entries if e.waste_type == "Contaminated Waste")
 
         # Average green score

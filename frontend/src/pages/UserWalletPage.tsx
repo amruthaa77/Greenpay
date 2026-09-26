@@ -140,7 +140,7 @@ export const UserWalletPage: React.FC<UserWalletPageProps> = ({ onNavigate }) =>
         <ShieldCheck className="w-5 h-5 text-emerald-800 shrink-0 mt-0.5" />
         <div className="text-xs text-emerald-950 leading-relaxed font-medium">
           <strong>{t('wallet.policy_title') || 'Civic Accountability Rule'}:</strong>{' '}
-          {t('wallet.schedule_notice') || '10 GP/kg for Recyclables, 5 GP/kg for Wet Waste, 3 GP/kg for Dry Waste. Points are immediately deducted upon placing an essential goods redemption pass. Penalties apply for unsegregated or hazardous waste.'}
+          {t('wallet.schedule_notice') || 'Paper & Cardboard: 25 GP/kg, Recyclable Metals & Cans: 50 GP/kg, Clean Plastic Packaging: 100 GP/kg. Points are immediately deducted upon placing an essential goods redemption pass. Penalties apply for contaminated or wet waste.'}
         </div>
       </div>
 

@@ -121,7 +121,7 @@ def register_user(
         title="Welcome to GreenPay!",
         message=(
             f"Your meter {meter} is now linked to Ward {ward.ward_number} ({ward.name}). "
-            "Segregate your wet and dry recyclables to increase your Green Score and earn sustainable wallet rewards."
+            "Hand over clean, dry recyclables (paper, cardboard, plastics, cans) to increase your Green Score and earn Green Points."
         ),
         type="SYSTEM",
         is_read=False,

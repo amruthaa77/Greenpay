@@ -52,11 +52,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const translateWasteType = (type?: string | null): string => {
     if (!type) return '';
     const norm = type.trim().toLowerCase();
-    if (norm === 'wet' || norm === 'wet waste') return t('waste.wet');
+    if (norm === 'paper & cardboard' || norm === 'paper' || norm === 'cardboard') return t('waste.paper_cardboard') || 'Paper & Cardboard';
+    if (norm === 'recyclable metals & cans' || norm === 'metals' || norm === 'cans' || norm === 'metal cans') return t('waste.metals_cans') || 'Recyclable Metals & Cans';
+    if (norm === 'clean plastic packaging' || norm === 'plastic packaging' || norm === 'plastics') return t('waste.plastic_packaging') || 'Clean Plastic Packaging';
     if (norm === 'dry' || norm === 'dry waste') return t('waste.dry');
     if (norm === 'recyclable' || norm === 'recyclable waste') return t('waste.recyclable');
     if (norm === 'non-recyclable' || norm === 'non_recyclable' || norm === 'non recyclable') return t('waste.non_recyclable');
     if (norm === 'contaminated' || norm === 'contaminated waste') return t('waste.contaminated');
+    if (norm === 'wet' || norm === 'wet waste') return t('waste.wet');
     return type;
   };
 

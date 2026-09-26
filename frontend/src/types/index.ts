@@ -1,6 +1,14 @@
 export type UserRole = 'USER' | 'ADMIN';
 export type UserType = 'Individual' | 'Commercial';
-export type WasteType = 'Wet Waste' | 'Dry Waste' | 'Recyclable' | 'Non-Recyclable' | 'Contaminated Waste';
+export type WasteType =
+  | 'Paper & Cardboard'
+  | 'Recyclable Metals & Cans'
+  | 'Clean Plastic Packaging'
+  | 'Contaminated Waste'
+  | 'Dry Waste'
+  | 'Recyclable'
+  | 'Non-Recyclable'
+  | 'Wet Waste';
 export type ClaimStatus = 'Pending' | 'Claimed' | 'Processed';
 export type JourneyStage = 'Collection' | 'Sorting' | 'Processing' | 'Recycling/Disposal';
 

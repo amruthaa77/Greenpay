@@ -3,11 +3,12 @@ from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
 VALID_WASTE_TYPES = [
-    "Wet Waste",
+    "Paper & Cardboard",
+    "Recyclable Metals & Cans",
+    "Clean Plastic Packaging",
+    "Contaminated Waste",
     "Dry Waste",
     "Recyclable",
-    "Non-Recyclable",
-    "Contaminated Waste"
 ]
 
 VALID_CLAIM_STATUSES = [
@@ -37,6 +38,11 @@ class WasteCreateRequest(BaseModel):
     @field_validator("waste_type")
     @classmethod
     def validate_waste_type(cls, v: str) -> str:
+        if v.strip().lower() in ["wet waste", "wet", "food waste", "organic waste"]:
+            raise ValueError(
+                "Wet Waste is not accepted. GreenPay accepts Dry Waste only: "
+                "Paper & Cardboard, Recyclable Metals & Cans, and Clean Plastic Packaging."
+            )
         if v not in VALID_WASTE_TYPES:
             raise ValueError(f"Invalid waste type. Must be one of: {', '.join(VALID_WASTE_TYPES)}")
         return v

@@ -27,17 +27,22 @@ class EnvironmentalImpactService:
 
         entries = query.all()
 
-        total_recyclable = sum(e.weight_kg for e in entries if e.waste_type in ["Recyclable", "Dry Waste"])
-        total_wet = sum(e.weight_kg for e in entries if e.waste_type == "Wet Waste")
+        DRY_CATEGORIES = [
+            "Paper & Cardboard",
+            "Recyclable Metals & Cans",
+            "Clean Plastic Packaging",
+            "Recyclable",
+            "Dry Waste",
+        ]
+        total_dry = sum(e.weight_kg for e in entries if e.waste_type in DRY_CATEGORIES)
         total_contaminated = sum(e.weight_kg for e in entries if e.waste_type == "Contaminated Waste")
 
-        # Total diverted = Recyclable (diverted to MRF) + Wet Waste (diverted to decentralized biomethanation/compost)
-        diverted_kg = round(total_recyclable + total_wet, 2)
-        recovered_recyclables_kg = round(total_recyclable, 2)
+        diverted_kg = round(total_dry, 2)
+        recovered_recyclables_kg = round(total_dry, 2)
 
-        co2_avoided_kg = round((total_recyclable * cls.CO2_SAVED_PER_KG_RECYCLABLE) + (total_wet * cls.CO2_SAVED_PER_KG_ORGANIC), 2)
-        water_saved_liters = round(total_recyclable * cls.WATER_SAVED_PER_KG_RECYCLABLE, 1)
-        energy_saved_kwh = round(total_recyclable * cls.ENERGY_SAVED_PER_KG_RECYCLABLE, 2)
+        co2_avoided_kg = round(total_dry * cls.CO2_SAVED_PER_KG_RECYCLABLE, 2)
+        water_saved_liters = round(total_dry * cls.WATER_SAVED_PER_KG_RECYCLABLE, 1)
+        energy_saved_kwh = round(total_dry * cls.ENERGY_SAVED_PER_KG_RECYCLABLE, 2)
 
         return {
             "recyclable_recovered_kg": recovered_recyclables_kg,
@@ -47,8 +52,8 @@ class EnvironmentalImpactService:
             "energy_saved_kwh": energy_saved_kwh,
             "is_estimate": True,
             "formula_descriptions": {
-                "landfill_diverted": "Sum of segregated Recyclable, Dry, and Wet waste diverted away from landfill dump sites.",
-                "co2_avoided": "1.42 kg CO2e per kg recyclable + 0.55 kg CO2e methane avoidance per kg wet waste composted (CPCB / EPA WARM factors).",
+                "landfill_diverted": "Sum of clean segregated dry recyclables (paper, cardboard, plastics, metals) diverted away from landfill dump sites.",
+                "co2_avoided": "1.42 kg CO2e emission avoidance per kg dry recyclables recovered for circular remanufacturing (CPCB / EPA WARM factors).",
                 "water_conserved": "26.0 liters preserved per kg virgin plastic/paper material avoided through circular recovery.",
                 "energy_saved": "2.1 kWh thermal & electrical equivalent saved per kg recycled polymer & paper pulp.",
             }

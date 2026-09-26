@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, ForeignKey, DateTime, func
+from sqlalchemy import Column, String, Float, Boolean, ForeignKey, DateTime, func
 from sqlalchemy.orm import relationship
 from app.models.base import BaseModel
 
@@ -13,7 +13,7 @@ class AIClassification(BaseModel):
     predicted_category = Column(String(50), nullable=False) # e.g. "Recyclable"
     confidence = Column(Float, nullable=False) # e.g. 0.94
     admin_confirmed_category = Column(String(50), nullable=False) # Category confirmed or overridden by admin
-    is_overridden = Column(Float, default=False)
+    is_overridden = Column(Boolean, default=False)
     
     # Relationships
     waste_entry = relationship("WasteEntry", foreign_keys=[waste_entry_id], uselist=False)

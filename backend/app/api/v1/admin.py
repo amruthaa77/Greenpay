@@ -797,6 +797,7 @@ def _handle_vision_classify(
         predicted_category=result["classification"],
         confidence=result["confidence"],
         admin_confirmed_category=result["classification"],
+        is_overridden=False,
     )
     db.add(ai_record)
     db.commit()

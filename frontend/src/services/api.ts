@@ -1,11 +1,26 @@
 // Resolve API base URL:
-// 1. If VITE_API_URL environment variable is provided, use it (trim trailing slashes)
-// 2. In production build without explicit env var, default to the production Render backend
+// 1. If VITE_API_BASE_URL or VITE_API_URL is provided, normalize trailing slashes and ensure /api/v1 prefix
+// 2. In production build without env var, default to https://greenpay-api.onrender.com/api/v1
 // 3. In local development without env var, fall back to '/api/v1' (routed via Vite proxy to 127.0.0.1:8000)
-const envApiUrl = import.meta.env.VITE_API_URL;
-export const API_BASE_URL = envApiUrl
-  ? envApiUrl.replace(/\/+$/, '')
-  : (import.meta.env.PROD ? 'https://greenpay-api.onrender.com/api/v1' : '/api/v1');
+const rawEnvUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+
+function resolveApiBaseUrl(rawUrl?: string): string {
+  if (rawUrl && typeof rawUrl === 'string' && rawUrl.trim()) {
+    const trimmed = rawUrl.trim().replace(/\/+$/, '');
+    if (trimmed.endsWith('/api/v1')) {
+      return trimmed;
+    }
+    if (trimmed.endsWith('/api')) {
+      return `${trimmed}/v1`;
+    }
+    return `${trimmed}/api/v1`;
+  }
+  return import.meta.env.PROD
+    ? 'https://greenpay-api.onrender.com/api/v1'
+    : '/api/v1';
+}
+
+export const API_BASE_URL = resolveApiBaseUrl(rawEnvUrl);
 
 export class ApiError extends Error {
   status: number;
@@ -41,7 +56,9 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
       headers,
     });
   } catch (networkErr: any) {
-    console.error(`Network error connecting to ${url}:`, networkErr);
+    if (import.meta.env.DEV) {
+      console.error(`Network error connecting to ${url}:`, networkErr);
+    }
     throw new ApiError(
       'Unable to connect to GreenPay services. Please ensure the backend server is running and try again.',
       0,
@@ -102,6 +119,9 @@ export const classifyWasteVision = async (preset: string): Promise<VisionClassif
   try {
     return await api.post<VisionClassificationResult>('/admin/vision/classify', { preset });
   } catch (err: any) {
+    if (import.meta.env.DEV) {
+      console.error(`AI Vision classification request failed at ${API_BASE_URL}/admin/vision/classify:`, err);
+    }
     if (err instanceof ApiError) {
       if (err.status === 0) {
         throw new Error('Unable to connect to GreenPay services. Please ensure the backend server is running and try again.');

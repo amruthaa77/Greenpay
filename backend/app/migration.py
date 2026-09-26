@@ -32,6 +32,21 @@ def run_migrations():
                 conn.execute(text("ALTER TABLE waste_entries ADD COLUMN ai_classification_id VARCHAR(36)"))
                 conn.commit()
 
+        # 3. ai_classifications.is_overridden type fix for PostgreSQL
+        if "ai_classifications" in inspector.get_table_names() and engine.dialect.name == "postgresql":
+            cols = inspector.get_columns("ai_classifications")
+            for col in cols:
+                if col["name"] == "is_overridden":
+                    col_type = str(col.get("type", "")).lower()
+                    if "bool" not in col_type:
+                        logger.info("Migrating schema: Converting ai_classifications.is_overridden to BOOLEAN...")
+                        conn.execute(text(
+                            "ALTER TABLE ai_classifications ALTER COLUMN is_overridden DROP DEFAULT, "
+                            "ALTER COLUMN is_overridden TYPE BOOLEAN USING (CASE WHEN is_overridden IS NOT NULL AND is_overridden != 0 THEN true ELSE false END), "
+                            "ALTER COLUMN is_overridden SET DEFAULT false"
+                        ))
+                        conn.commit()
+
     # 3. Backfill greenpay_id for existing users
     db: Session = SessionLocal()
     try:

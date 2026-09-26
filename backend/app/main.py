@@ -49,13 +49,38 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import re
+
+def _get_cors_headers(request: Request) -> dict:
+    origin = request.headers.get("origin")
+    if not origin:
+        return {}
+    allowed = False
+    if origin in settings.BACKEND_CORS_ORIGINS:
+        allowed = True
+    elif re.match(r"^https://.*\.vercel\.app$", origin):
+        allowed = True
+    elif "localhost" in origin or "127.0.0.1" in origin:
+        allowed = True
+    
+    if allowed:
+        return {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "*",
+        }
+    return {}
+
 # Exception Handlers
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    headers = dict(exc.headers or {})
+    headers.update(_get_cors_headers(request))
     return JSONResponse(
         status_code=exc.status_code,
         content={"detail": exc.detail},
-        headers=exc.headers,
+        headers=headers,
     )
 
 from fastapi.encoders import jsonable_encoder
@@ -67,20 +92,24 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     loc = errors[0].get("loc", []) if errors else []
     field_name = str(loc[-1]) if loc else "field"
     clean_msg = f"{field_name}: {msg}" if field_name != "body" else msg
+    headers = _get_cors_headers(request)
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         content={"detail": clean_msg, "errors": jsonable_encoder(errors)},
+        headers=headers,
     )
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     logger.exception(f"Unhandled server error on {request.method} {request.url.path}: {exc}")
+    headers = _get_cors_headers(request)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "detail": "An internal server error occurred. Please contact municipal IT support.",
             "error": str(exc),
         },
+        headers=headers,
     )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

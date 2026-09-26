@@ -51,6 +51,7 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
+        "https://greenpay-five.vercel.app",
     ]
     
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="allow")

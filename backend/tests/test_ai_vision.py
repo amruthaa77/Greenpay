@@ -1,3 +1,7 @@
+import io
+import json
+from unittest.mock import AsyncMock, MagicMock, patch
+from PIL import Image
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
@@ -9,6 +13,12 @@ from app.models.reward import RewardTransaction
 from app.core.security import create_access_token
 
 client = TestClient(app)
+
+def make_test_image(format="JPEG", size=(60, 60), color=(0, 180, 100)) -> bytes:
+    buf = io.BytesIO()
+    img = Image.new("RGB", size, color=color)
+    img.save(buf, format=format)
+    return buf.getvalue()
 
 @pytest.fixture
 def db():
@@ -275,3 +285,276 @@ def test_two_user_attribution_and_points_isolation(admin_token, db):
 
     assert round(new_a - initial_a, 1) == 50.0, f"User A points mismatch: expected +50, got {new_a - initial_a}"
     assert round(new_b - initial_b, 1) == 200.0, f"User B points mismatch: expected +200, got {new_b - initial_b}"
+
+
+# =========================================================================
+# FEATURE C: REAL MULTIMODAL VISION MODEL TESTS
+# =========================================================================
+
+def _create_mock_gemini_response(detected_object: str, category: str, confidence: float, action: str = "ACCEPT", description: str = "Valid recyclable"):
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "candidates": [
+            {
+                "content": {
+                    "parts": [
+                        {
+                            "text": json.dumps({
+                                "detected_object": detected_object,
+                                "classification": category,
+                                "confidence": confidence,
+                                "description": description,
+                                "action": action,
+                                "visual_indicators": ["Visual feature 1", "Visual feature 2"],
+                                "suggested_action": f"{action} for processing"
+                            })
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+    return mock_resp
+
+def test_real_image_upload_success_plastic(admin_token, db):
+    token, admin = admin_token
+    img_bytes = make_test_image(format="JPEG")
+    mock_gemini = _create_mock_gemini_response(
+        detected_object="Crushed PET Plastic Bottle",
+        category="Clean Plastic Packaging",
+        confidence=0.96,
+        description="Clean, transparent polyethylene terephthalate container"
+    )
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post, \
+         patch("app.services.ai_classifier.settings.GEMINI_API_KEY", "test-gemini-key"):
+        mock_post.return_value = mock_gemini
+
+        response = client.post(
+            "/api/v1/admin/vision/classify",
+            headers={"Authorization": f"Bearer {token}"},
+            files={"image": ("plastic_sample.jpg", img_bytes, "image/jpeg")}
+        )
+
+        assert response.status_code == 200, response.text
+        data = response.json()
+        assert data["classification"] == "Clean Plastic Packaging"
+        assert data["confidence"] == 0.96
+        assert data["action"] == "ACCEPT"
+        assert data["rate_individual"] == 100.0
+        assert data["rate_commercial"] == 80.0
+        assert "classification_id" in data
+        assert data["is_assistance_only"] is True
+
+        # Check DB record
+        record = db.query(AIClassification).filter(AIClassification.id == data["classification_id"]).first()
+        assert record is not None
+        assert record.admin_id == admin.id
+        assert record.predicted_category == "Clean Plastic Packaging"
+        assert record.confidence == 0.96
+        assert "plastic_sample.jpg" in record.image_url
+
+def test_real_image_upload_paper_cardboard(admin_token):
+    token, _ = admin_token
+    img_bytes = make_test_image(format="PNG")
+    mock_gemini = _create_mock_gemini_response(
+        detected_object="Cardboard Shipping Box",
+        category="Paper & Cardboard",
+        confidence=0.91,
+        description="Flattened corrugated brown cardboard carton"
+    )
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post, \
+         patch("app.services.ai_classifier.settings.GEMINI_API_KEY", "test-gemini-key"):
+        mock_post.return_value = mock_gemini
+
+        response = client.post(
+            "/api/v1/admin/vision/classify",
+            headers={"Authorization": f"Bearer {token}"},
+            files={"image": ("carton.png", img_bytes, "image/png")}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["classification"] == "Paper & Cardboard"
+        assert data["confidence"] == 0.91
+        assert data["action"] == "ACCEPT"
+        assert data["rate_individual"] == 25.0
+        assert data["rate_commercial"] == 20.0
+
+def test_real_image_upload_metals_and_cans(admin_token):
+    token, _ = admin_token
+    img_bytes = make_test_image(format="WEBP")
+    mock_gemini = _create_mock_gemini_response(
+        detected_object="Aluminum Beverage Can",
+        category="Recyclable Metals & Cans",
+        confidence=0.94,
+        description="Rinsed and clean aluminum soda can"
+    )
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post, \
+         patch("app.services.ai_classifier.settings.GEMINI_API_KEY", "test-gemini-key"):
+        mock_post.return_value = mock_gemini
+
+        response = client.post(
+            "/api/v1/admin/vision/classify",
+            headers={"Authorization": f"Bearer {token}"},
+            files={"image": ("can.webp", img_bytes, "image/webp")}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["classification"] == "Recyclable Metals & Cans"
+        assert data["confidence"] == 0.94
+        assert data["action"] == "ACCEPT"
+        assert data["rate_individual"] == 50.0
+        assert data["rate_commercial"] == 40.0
+
+def test_real_image_upload_contaminated_waste_penalty(admin_token):
+    token, _ = admin_token
+    img_bytes = make_test_image(format="JPEG")
+    mock_gemini = _create_mock_gemini_response(
+        detected_object="Food-Soiled Greasy Paper Box",
+        category="Contaminated Waste",
+        confidence=0.98,
+        action="REJECT",
+        description="Severely soiled with food remnants and oils; unrecyclable"
+    )
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post, \
+         patch("app.services.ai_classifier.settings.GEMINI_API_KEY", "test-gemini-key"):
+        mock_post.return_value = mock_gemini
+
+        response = client.post(
+            "/api/v1/admin/vision/classify",
+            headers={"Authorization": f"Bearer {token}"},
+            files={"image": ("contaminated.jpg", img_bytes, "image/jpeg")}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["classification"] == "Contaminated Waste"
+        assert data["confidence"] == 0.98
+        assert data["action"] == "REJECT"
+        assert data["penalty_individual"] == -15.0
+        assert data["penalty_commercial"] == -30.0
+
+def test_real_image_low_confidence_flag(admin_token):
+    token, _ = admin_token
+    img_bytes = make_test_image(format="JPEG")
+    mock_gemini = _create_mock_gemini_response(
+        detected_object="Unclear Plastic Film Fragment",
+        category="Clean Plastic Packaging",
+        confidence=0.62,
+        description="Object is blurry or partially obscured; verification recommended"
+    )
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post, \
+         patch("app.services.ai_classifier.settings.GEMINI_API_KEY", "test-gemini-key"):
+        mock_post.return_value = mock_gemini
+
+        response = client.post(
+            "/api/v1/admin/vision/classify",
+            headers={"Authorization": f"Bearer {token}"},
+            files={"image": ("blurry_sample.jpg", img_bytes, "image/jpeg")}
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["confidence"] == 0.62
+        assert data["confidence"] < 0.75  # Triggers "Low confidence — manual verification required" in frontend
+
+def test_real_image_unsupported_file_type_returns_422(admin_token):
+    token, _ = admin_token
+    fake_txt = b"Hello, this is just plain text content."
+    response = client.post(
+        "/api/v1/admin/vision/classify",
+        headers={"Authorization": f"Bearer {token}"},
+        files={"image": ("notes.txt", fake_txt, "text/plain")}
+    )
+    assert response.status_code == 422
+    assert "Only JPEG, PNG, and WEBP are supported" in response.json()["detail"]
+
+def test_real_image_corrupted_data_returns_422(admin_token):
+    token, _ = admin_token
+    corrupt_bytes = b"NOT_A_VALID_JPEG_BINARY_DATA"
+    response = client.post(
+        "/api/v1/admin/vision/classify",
+        headers={"Authorization": f"Bearer {token}"},
+        files={"image": ("corrupted.jpg", corrupt_bytes, "image/jpeg")}
+    )
+    assert response.status_code == 422
+    assert "Only JPEG, PNG, and WEBP are supported" in response.json()["detail"]
+
+def test_real_image_oversized_file_returns_413(admin_token):
+    token, _ = admin_token
+    large_bytes = b"0" * (10 * 1024 * 1024 + 100)
+    response = client.post(
+        "/api/v1/admin/vision/classify",
+        headers={"Authorization": f"Bearer {token}"},
+        files={"image": ("oversized.jpg", large_bytes, "image/jpeg")}
+    )
+    assert response.status_code == 413
+    assert "10MB" in response.json()["detail"]
+
+def test_real_image_unconfigured_api_key_returns_503(admin_token):
+    token, _ = admin_token
+    img_bytes = make_test_image(format="JPEG")
+    with patch("app.services.ai_classifier.settings.GEMINI_API_KEY", None), \
+         patch("app.services.ai_classifier.settings.VISION_API_KEY", None), \
+         patch("app.services.ai_classifier.settings.OPENAI_API_KEY", None):
+        response = client.post(
+            "/api/v1/admin/vision/classify",
+            headers={"Authorization": f"Bearer {token}"},
+            files={"image": ("sample.jpg", img_bytes, "image/jpeg")}
+        )
+        assert response.status_code == 503
+        assert "No vision model provider configured" in response.json()["detail"]
+
+def test_real_image_end_to_end_waste_entry(admin_token, db):
+    token, admin = admin_token
+    citizen = db.query(User).filter(User.role == "USER", User.is_active == True).first()
+    assert citizen is not None
+
+    img_bytes = make_test_image(format="JPEG")
+    mock_gemini = _create_mock_gemini_response(
+        detected_object="Corrugated Packaging Box",
+        category="Paper & Cardboard",
+        confidence=0.93
+    )
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post, \
+         patch("app.services.ai_classifier.settings.GEMINI_API_KEY", "test-gemini-key"):
+        mock_post.return_value = mock_gemini
+
+        # Step 1: Real image vision classification
+        ai_resp = client.post(
+            "/api/v1/admin/vision/classify",
+            headers={"Authorization": f"Bearer {token}"},
+            files={"image": ("box.jpg", img_bytes, "image/jpeg")}
+        )
+        assert ai_resp.status_code == 200
+        classification_id = ai_resp.json()["classification_id"]
+
+        # Step 2: Collector records waste with this classification_id
+        waste_resp = client.post(
+            "/api/v1/admin/waste",
+            headers={"Authorization": f"Bearer {token}"},
+            json={
+                "meter_number": citizen.greenpay_id,
+                "waste_type": "Paper & Cardboard",
+                "weight_kg": 4.0,
+                "ai_classification_id": classification_id,
+                "admin_feedback": "Real image vision verified by supervisor"
+            }
+        )
+        assert waste_resp.status_code == 201
+        waste_data = waste_resp.json()
+        assert waste_data["reward_amount"] == 100.0  # 4.0 kg * 25 GP/kg
+        assert waste_data["ai_classification_id"] == classification_id
+
+        # Step 3: Verify AI classification links to the recorded waste entry
+        ai_record = db.query(AIClassification).filter(AIClassification.id == classification_id).first()
+        assert ai_record.waste_entry_id == waste_data["id"]
+

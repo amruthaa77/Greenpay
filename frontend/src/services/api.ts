@@ -37,9 +37,13 @@ export class ApiError extends Error {
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const token = localStorage.getItem('greenpay_token');
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
   };
+
+  // Only set application/json when not sending FormData (let browser set multipart boundary)
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -106,6 +110,8 @@ export const api = {
   get: <T>(endpoint: string) => request<T>(endpoint, { method: 'GET' }),
   post: <T>(endpoint: string, body?: any) =>
     request<T>(endpoint, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
+  postFormData: <T>(endpoint: string, formData: FormData) =>
+    request<T>(endpoint, { method: 'POST', body: formData }),
   patch: <T>(endpoint: string, body?: any) =>
     request<T>(endpoint, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
   put: <T>(endpoint: string, body?: any) =>
@@ -115,12 +121,48 @@ export const api = {
 
 import type { VisionClassificationResult, CitizenLookupResult } from '../types';
 
-export const classifyWasteVision = async (preset: string): Promise<VisionClassificationResult> => {
+export const classifyWasteVisionImage = async (file: File): Promise<VisionClassificationResult> => {
+  const formData = new FormData();
+  formData.append('image', file);
   try {
-    return await api.post<VisionClassificationResult>('/admin/vision/classify', { preset });
+    return await api.postFormData<VisionClassificationResult>('/admin/vision/classify', formData);
   } catch (err: any) {
     if (import.meta.env.DEV) {
-      console.error(`AI Vision classification request failed at ${API_BASE_URL}/admin/vision/classify:`, err);
+      console.error(`AI Vision real image classification failed at ${API_BASE_URL}/admin/vision/classify:`, err);
+    }
+    if (err instanceof ApiError) {
+      if (err.status === 0) {
+        throw new Error('Unable to connect to GreenPay services. Please ensure the backend server is running and try again.');
+      }
+      if (err.status === 401 || err.status === 403) {
+        throw new Error('Your admin session has expired. Please log in again.');
+      }
+      if (err.status === 413) {
+        throw new Error('Image file is too large. Maximum allowable size is 10MB.');
+      }
+      if (err.status === 422) {
+        throw new Error(err.message || 'Invalid image format. Only JPEG, PNG, and WEBP are supported.');
+      }
+      if (err.status === 503) {
+        throw new Error(err.message || 'AI Vision provider is not configured. Please set GEMINI_API_KEY in the environment.');
+      }
+      if (err.status >= 500) {
+        throw new Error('Vision classification failed. Please try again or inspect item manually.');
+      }
+      throw new Error(err.message || 'Vision classification failed. Please try again.');
+    }
+    throw new Error('Unable to connect to GreenPay services. Please ensure the backend server is running and try again.');
+  }
+};
+
+export const classifyWasteVision = async (preset: string): Promise<VisionClassificationResult> => {
+  const formData = new FormData();
+  formData.append('preset', preset);
+  try {
+    return await api.postFormData<VisionClassificationResult>('/admin/vision/classify', formData);
+  } catch (err: any) {
+    if (import.meta.env.DEV) {
+      console.error(`AI Vision preset classification request failed at ${API_BASE_URL}/admin/vision/classify:`, err);
     }
     if (err instanceof ApiError) {
       if (err.status === 0) {

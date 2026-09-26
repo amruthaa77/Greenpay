@@ -1,9 +1,11 @@
 import csv
 import io
 import uuid
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Response, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Response, Request, UploadFile, File, Form
+from PIL import Image
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_, desc
 from app.database import get_db
@@ -30,10 +32,12 @@ from app.schemas.user import CitizenLookupResponse
 from app.schemas.audit import AuditLogResponse, AuditListResponse
 from app.services.reward_engine import RewardEngine
 from app.services.anomaly_service import AnomalyDetector
-from app.services.ai_classifier import AIClassifierService
+from app.services.ai_classifier import AIClassifierService, VisionProviderNotConfiguredError
 from app.services.predictive_service import PredictiveService
 from app.services.audit_service import log_audit_event
 from app.api.deps import get_current_admin
+
+logger = logging.getLogger("uvicorn.error")
 
 router = APIRouter()
 
@@ -821,13 +825,120 @@ def _handle_vision_classify(
     )
 
 @router.post("/vision/classify", response_model=VisionClassifyResponse)
-def classify_waste_vision(
-    data: VisionClassifyRequest,
+async def classify_waste_vision(
+    request: Request,
+    image: Optional[UploadFile] = File(None),
+    preset: Optional[str] = Form(None),
     admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
-    identifier = data.preset or data.image_name_or_keyword
-    return _handle_vision_classify(identifier, admin, db)
+    # Support backward-compatible JSON payloads {"preset": "..."}
+    if not image and preset is None and "application/json" in request.headers.get("content-type", ""):
+        try:
+            body = await request.json()
+            if isinstance(body, dict):
+                preset = body.get("preset") or body.get("image_name_or_keyword")
+        except Exception:
+            pass
+
+    # 1. Real Image Vision Processing
+    if image is not None:
+        image_bytes = await image.read()
+        if len(image_bytes) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Uploaded image file is empty (0 bytes)."
+            )
+        if len(image_bytes) > 10 * 1024 * 1024:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail="Image file exceeds maximum allowable size of 10MB."
+            )
+
+        # Validate with Pillow
+        try:
+            pil_img = Image.open(io.BytesIO(image_bytes))
+            pil_img.verify()
+            pil_img = Image.open(io.BytesIO(image_bytes))
+            fmt = (pil_img.format or "").upper()
+            if fmt not in ["JPEG", "JPG", "PNG", "WEBP"]:
+                raise ValueError(f"Unsupported format: {fmt}")
+            mime_type = f"image/{fmt.lower()}"
+            if mime_type == "image/jpg":
+                mime_type = "image/jpeg"
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Uploaded file is not a valid image format. Only JPEG, PNG, and WEBP are supported."
+            )
+
+        try:
+            result = await AIClassifierService.classify_real_image(
+                image_bytes=image_bytes,
+                mime_type=mime_type,
+                filename=image.filename or "waste_capture.jpg"
+            )
+        except VisionProviderNotConfiguredError as e:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=str(e)
+            )
+        except Exception as e:
+            logger.exception(f"Vision model error: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Vision model analysis failed: {str(e)}"
+            )
+
+        image_label = f"upload:{image.filename or 'captured_waste.jpg'}"
+
+    # 2. Demo Sample Preset Processing
+    elif preset:
+        try:
+            result = AIClassifierService.classify_image(preset)
+        except ValueError as e:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=str(e)
+            )
+        image_label = f"preset:{preset}"
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="An image file (multipart/form-data) or a demo sample preset is required."
+        )
+
+    # 3. Persist to database
+    ai_record = AIClassification(
+        id=result["classification_id"],
+        admin_id=admin.id,
+        image_url=image_label[:255],
+        detected_object=result["detected_object"],
+        predicted_category=result["classification"],
+        confidence=result["confidence"],
+        admin_confirmed_category=result["classification"],
+        is_overridden=False,
+    )
+    db.add(ai_record)
+    db.commit()
+
+    return VisionClassifyResponse(
+        classification_id=result["classification_id"],
+        detected_object=result["detected_object"],
+        classification=result["classification"],
+        predicted_category=result["classification"],
+        confidence=result["confidence"],
+        description=result["description"],
+        action=result["action"],
+        rate_individual=result["rate_individual"],
+        rate_commercial=result["rate_commercial"],
+        penalty_individual=result["penalty_individual"],
+        penalty_commercial=result["penalty_commercial"],
+        is_assistance_only=True,
+        disclaimer=result["disclaimer"],
+        visual_indicators=result["visual_indicators"],
+        suggested_action=result["suggested_action"],
+    )
 
 @router.post("/ai/classify", response_model=VisionClassifyResponse)
 def classify_waste_image(

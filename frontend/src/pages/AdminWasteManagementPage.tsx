@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   PlusCircle,
   Cpu,
@@ -12,6 +12,8 @@ import {
   Layers,
   FileText,
   Camera,
+  Upload,
+  SlidersHorizontal,
   X,
   Scale,
   Award,
@@ -27,7 +29,7 @@ import {
 } from '../types';
 import { useOffline } from '../context/OfflineContext';
 import { useLanguage } from '../context/LanguageContext';
-import { api, classifyWasteVision } from '../services/api';
+import { api, classifyWasteVision, classifyWasteVisionImage } from '../services/api';
 import { CitizenQRScannerModal } from '../components/CitizenQRScannerModal';
 import {
   PageHeader,
@@ -59,11 +61,19 @@ export const AdminWasteManagementPage: React.FC = () => {
 
   // AI Classification state
   const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiMode, setAiMode] = useState<'real' | 'demo'>('real');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<VisionClassificationResult | null>(null);
   const [selectedAiClassificationId, setSelectedAiClassificationId] = useState<string | null>(null);
   const [selectedPreset, setSelectedPreset] = useState('clean_pet_bottles_chips_wrappers');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [overrideCategory, setOverrideCategory] = useState<WasteType | null>(null);
+  const [showOverridePicker, setShowOverridePicker] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const cameraInputRef = useRef<HTMLInputElement | null>(null);
 
   // Confirmation & submission state
   const [confirmationOpen, setConfirmationOpen] = useState(false);
@@ -95,13 +105,66 @@ export const AdminWasteManagementPage: React.FC = () => {
   const handleOpenAIModal = () => {
     setAiModalOpen(true);
     setAiError(null);
+    setShowOverridePicker(false);
+    setOverrideCategory(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setAiError('Please select a valid image file (JPEG, PNG, or WEBP).');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setAiError('Selected file exceeds maximum allowable size of 10MB.');
+      return;
+    }
+
+    setAiError(null);
+    setSelectedFile(file);
+    setAiResult(null);
+    setShowOverridePicker(false);
+    setOverrideCategory(null);
+
+    // Create object URL for instant preview
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+  };
+
+  const handleClearImage = () => {
+    setSelectedFile(null);
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    setAiResult(null);
+    setAiError(null);
+    setShowOverridePicker(false);
+    setOverrideCategory(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
   const handleRunAIVision = async () => {
     setAiLoading(true);
     setAiError(null);
+    setShowOverridePicker(false);
+    setOverrideCategory(null);
+
     try {
-      const data = await classifyWasteVision(selectedPreset);
+      let data: VisionClassificationResult;
+      if (aiMode === 'real') {
+        if (!selectedFile) {
+          setAiError('Please take a photo or upload an image file first.');
+          setAiLoading(false);
+          return;
+        }
+        data = await classifyWasteVisionImage(selectedFile);
+      } else {
+        data = await classifyWasteVision(selectedPreset);
+      }
       setAiResult(data);
     } catch (err: any) {
       console.error('AI Classification error:', err);
@@ -113,10 +176,14 @@ export const AdminWasteManagementPage: React.FC = () => {
 
   const handleAcceptAI = () => {
     if (!aiResult) return;
-    setWasteType(aiResult.classification);
+    const finalCategory = overrideCategory || aiResult.classification;
+    setWasteType(finalCategory);
     setSelectedAiClassificationId(aiResult.classification_id);
+    const overrideNote = overrideCategory && overrideCategory !== aiResult.classification
+      ? ` [Admin Override from ${aiResult.classification}]`
+      : '';
     setFeedback(
-      `AI Vision verified: ${aiResult.detected_object} (${aiResult.classification}, ${(aiResult.confidence * 100).toFixed(0)}% confidence)`
+      `AI Vision verified: ${aiResult.detected_object} -> ${finalCategory} (${(aiResult.confidence * 100).toFixed(0)}% confidence)${overrideNote}`
     );
     setAiModalOpen(false);
   };
@@ -509,7 +576,7 @@ export const AdminWasteManagementPage: React.FC = () => {
         isOpen={aiModalOpen}
         onClose={() => setAiModalOpen(false)}
         title="AI Vision Classification Assistance"
-        subtitle="Simulate camera snapshot analysis for automated category detection"
+        subtitle="Upload or capture a waste image for AI-assisted classification."
         footer={
           aiResult ? (
             <div className="flex items-center justify-between w-full">
@@ -520,52 +587,214 @@ export const AdminWasteManagementPage: React.FC = () => {
               >
                 Close
               </Button>
-              <Button
-                variant={aiResult.action === 'ACCEPT' ? 'primary' : 'danger'}
-                size="sm"
-                onClick={handleAcceptAI}
-                leftIcon={aiResult.action === 'ACCEPT' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-              >
-                {aiResult.action === 'ACCEPT'
-                  ? `Accept (${aiResult.classification})`
-                  : 'Apply Contamination Penalty'}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowOverridePicker(!showOverridePicker)}
+                  leftIcon={<SlidersHorizontal className="w-4 h-4" />}
+                >
+                  {showOverridePicker ? 'Hide Override' : 'Override / Change'}
+                </Button>
+                <Button
+                  variant={(overrideCategory || aiResult.classification) !== 'Contaminated Waste' ? 'primary' : 'danger'}
+                  size="sm"
+                  onClick={handleAcceptAI}
+                  leftIcon={(overrideCategory || aiResult.classification) !== 'Contaminated Waste' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                >
+                  {overrideCategory
+                    ? `Accept (${overrideCategory})`
+                    : aiResult.action === 'ACCEPT'
+                    ? `Accept (${aiResult.classification})`
+                    : 'Apply Contamination Penalty'}
+                </Button>
+              </div>
             </div>
           ) : undefined
         }
       >
         <div className="space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              Select Sample Preset Image
-            </label>
-            <select
-              value={selectedPreset}
-              onChange={(e) => setSelectedPreset(e.target.value)}
-              className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-600/20"
+          {/* Mode Switcher Tabs */}
+          <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+            <button
+              type="button"
+              onClick={() => {
+                setAiMode('real');
+                setAiError(null);
+              }}
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                aiMode === 'real'
+                  ? 'bg-white text-purple-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
             >
-              <option value="clean_pet_bottles_chips_wrappers">Clean PET Bottles & Chips Wrappers (Clean Plastic Packaging)</option>
-              <option value="clean_plastic_bottle">Clean Rigid Plastic Containers / Bottles (Clean Plastic Packaging)</option>
-              <option value="clean_cardboard">Clean Corrugated Cardboard Boxes (Paper & Cardboard)</option>
-              <option value="clean_newspaper">Clean Newspapers & Office Paper (Paper & Cardboard)</option>
-              <option value="clean_aluminum_can">Clean Aluminum Beverage Cans (Recyclable Metals & Cans)</option>
-              <option value="clean_metal_tin">Clean Metal Food Tins (Recyclable Metals & Cans)</option>
-              <option value="clean_foil">Clean Aluminum Household Foil (Recyclable Metals & Cans)</option>
-              <option value="wet_food_scraps">Wet Kitchen Food Scraps (REJECT - Contaminated / Non-Accepted)</option>
-              <option value="mixed_contaminated">Greasy Pizza Box / Mixed Residual (REJECT - Contaminated Waste)</option>
-            </select>
+              <Camera className="w-3.5 h-3.5" />
+              <span>Real Image Vision</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAiMode('demo');
+                setAiError(null);
+              }}
+              className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                aiMode === 'demo'
+                  ? 'bg-white text-purple-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Demo Test Samples</span>
+            </button>
           </div>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRunAIVision}
-            isLoading={aiLoading}
-            className="w-full py-2.5 text-purple-700 border-purple-200 hover:bg-purple-50"
-            leftIcon={<Camera className="w-4 h-4 text-purple-600" />}
-          >
-            {aiLoading ? 'Analyzing Sample with AI Vision...' : 'Run Vision Model Analysis'}
-          </Button>
+          {/* Hidden File / Camera Inputs */}
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            ref={cameraInputRef}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
+          {aiMode === 'real' ? (
+            <div className="space-y-3">
+              {/* Photo Preview / Upload Area */}
+              {previewUrl ? (
+                <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-900 flex flex-col items-center justify-center">
+                  <img
+                    src={previewUrl}
+                    alt="Captured waste preview"
+                    className="max-h-56 w-auto object-contain rounded-xl"
+                  />
+                  <div className="w-full bg-slate-950/80 backdrop-blur-xs p-2.5 px-3 flex items-center justify-between text-xs text-white border-t border-white/10">
+                    <div className="truncate max-w-[220px]">
+                      <span className="font-semibold block truncate">{selectedFile?.name}</span>
+                      <span className="text-[10px] text-slate-400">
+                        {((selectedFile?.size || 0) / (1024 * 1024)).toFixed(2)} MB
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        className="text-white hover:bg-white/10 text-xs"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        Change
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="xs"
+                        className="text-rose-400 hover:bg-rose-500/20 text-xs"
+                        onClick={handleClearImage}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-6 border-2 border-dashed border-purple-200 rounded-2xl bg-purple-50/30 text-center space-y-3">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
+                    <Camera className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Capture or Upload Waste Photo
+                    </h4>
+                    <p className="text-[11px] text-slate-500 mt-1 max-w-sm mx-auto">
+                      Photograph clean dry recyclables or suspected contamination for automated vision analysis.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      onClick={() => cameraInputRef.current?.click()}
+                      leftIcon={<Camera className="w-4 h-4" />}
+                    >
+                      Take Photo
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      leftIcon={<Upload className="w-4 h-4" />}
+                    >
+                      Upload Image
+                    </Button>
+                  </div>
+                  <span className="block text-[10px] text-slate-400">
+                    Supports JPEG, PNG, WEBP (up to 10MB)
+                  </span>
+                </div>
+              )}
+
+              {/* Action Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRunAIVision}
+                isLoading={aiLoading}
+                disabled={!selectedFile}
+                className="w-full py-2.5 text-purple-700 border-purple-200 hover:bg-purple-50 disabled:opacity-50"
+                leftIcon={<Sparkles className="w-4 h-4 text-purple-600" />}
+              >
+                {aiLoading ? 'Analyzing image with vision model...' : 'Run Vision Model Analysis'}
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200 text-xs text-amber-800">
+                <span className="font-bold block">Demo Test Samples Mode:</span>
+                Simulated presets for operator training and validation without taking live camera photos.
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                  Select Demo Sample Preset
+                </label>
+                <select
+                  value={selectedPreset}
+                  onChange={(e) => setSelectedPreset(e.target.value)}
+                  className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-600/20"
+                >
+                  <option value="clean_pet_bottles_chips_wrappers">Clean PET Bottles & Chips Wrappers (Clean Plastic Packaging)</option>
+                  <option value="clean_plastic_bottle">Clean Rigid Plastic Containers / Bottles (Clean Plastic Packaging)</option>
+                  <option value="clean_cardboard">Clean Corrugated Cardboard Boxes (Paper & Cardboard)</option>
+                  <option value="clean_newspaper">Clean Newspapers & Office Paper (Paper & Cardboard)</option>
+                  <option value="clean_aluminum_can">Clean Aluminum Beverage Cans (Recyclable Metals & Cans)</option>
+                  <option value="clean_metal_tin">Clean Metal Food Tins (Recyclable Metals & Cans)</option>
+                  <option value="clean_foil">Clean Aluminum Household Foil (Recyclable Metals & Cans)</option>
+                  <option value="wet_food_scraps">Wet Kitchen Food Scraps (REJECT - Contaminated / Non-Accepted)</option>
+                  <option value="mixed_contaminated">Greasy Pizza Box / Mixed Residual (REJECT - Contaminated Waste)</option>
+                </select>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRunAIVision}
+                isLoading={aiLoading}
+                className="w-full py-2.5 text-purple-700 border-purple-200 hover:bg-purple-50"
+                leftIcon={<Layers className="w-4 h-4 text-purple-600" />}
+              >
+                {aiLoading ? 'Analyzing Sample with AI Vision...' : 'Run Vision Model Analysis'}
+              </Button>
+            </div>
+          )}
 
           {aiError && (
             <Alert
@@ -575,32 +804,64 @@ export const AdminWasteManagementPage: React.FC = () => {
             />
           )}
 
+          {/* AI Result Card */}
           {aiResult && (
             <div className="p-4 bg-purple-50/70 rounded-2xl border border-purple-200/80 space-y-3 text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-900 text-sm">{aiResult.detected_object}</span>
                 <Badge
-                  variant={aiResult.confidence >= 0.85 ? 'purple' : 'amber'}
+                  variant={aiResult.confidence >= 0.75 ? 'purple' : 'amber'}
                   size="xs"
                 >
                   {(aiResult.confidence * 100).toFixed(0)}% Confidence
                 </Badge>
               </div>
 
+              {/* Low Confidence Alert */}
+              {aiResult.confidence < 0.75 && (
+                <div className="p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-[11px] flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span>Low confidence ({(aiResult.confidence * 100).toFixed(0)}%) — manual verification required.</span>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-2 py-2 border-y border-purple-100 text-xs">
                 <div>
                   <span className="text-slate-500 block text-[10px] font-bold uppercase">Classification</span>
-                  <span className="font-bold text-purple-950">{aiResult.classification}</span>
+                  <span className="font-bold text-purple-950">
+                    {overrideCategory || aiResult.classification}
+                    {overrideCategory && <span className="text-[10px] text-amber-700 ml-1 font-semibold">(Overridden)</span>}
+                  </span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px] font-bold uppercase">Reward Rate</span>
-                  <span className={`font-bold ${aiResult.action === 'ACCEPT' ? 'text-emerald-700' : 'text-rose-600'}`}>
-                    {aiResult.action === 'ACCEPT'
-                      ? `+${aiResult.points_rate_gp_per_kg ?? aiResult.rate_individual ?? 0} GP/kg`
-                      : `-${aiResult.contamination_deduction_gp ?? aiResult.penalty_individual ?? 15} GP penalty`}
+                  <span className={`font-bold ${(overrideCategory || aiResult.classification) !== 'Contaminated Waste' ? 'text-emerald-700' : 'text-rose-600'}`}>
+                    {(overrideCategory || aiResult.classification) === 'Paper & Cardboard' && '+25 GP/kg'}
+                    {(overrideCategory || aiResult.classification) === 'Recyclable Metals & Cans' && '+50 GP/kg'}
+                    {(overrideCategory || aiResult.classification) === 'Clean Plastic Packaging' && '+100 GP/kg'}
+                    {(overrideCategory || aiResult.classification) === 'Contaminated Waste' && '-15 GP penalty'}
                   </span>
                 </div>
               </div>
+
+              {/* Override Picker */}
+              {showOverridePicker && (
+                <div className="p-3 bg-white rounded-xl border border-purple-200 space-y-1.5">
+                  <label className="block text-[10px] font-bold uppercase text-slate-600">
+                    Select Manual Category Override:
+                  </label>
+                  <select
+                    value={overrideCategory || aiResult.classification}
+                    onChange={(e) => setOverrideCategory(e.target.value as WasteType)}
+                    className="w-full py-1.5 px-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-800"
+                  >
+                    <option value="Paper & Cardboard">📦 Paper & Cardboard (25 GP/kg)</option>
+                    <option value="Recyclable Metals & Cans">🥫 Recyclable Metals & Cans (50 GP/kg)</option>
+                    <option value="Clean Plastic Packaging">🧴 Clean Plastic Packaging (100 GP/kg)</option>
+                    <option value="Contaminated Waste">⚠️ Contaminated Waste (-15 GP penalty)</option>
+                  </select>
+                </div>
+              )}
 
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 text-[11px]">Model Recommendation:</span>

@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Optional
 from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
@@ -53,6 +53,12 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "https://greenpay-five.vercel.app",
     ]
+
+    # AI Vision Model Settings
+    GEMINI_API_KEY: Optional[str] = os.getenv("GEMINI_API_KEY")
+    OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
+    VISION_API_KEY: Optional[str] = os.getenv("VISION_API_KEY")
+    VISION_MODEL: str = os.getenv("VISION_MODEL", "gemini-1.5-flash")
     
     model_config = SettingsConfigDict(case_sensitive=True, env_file=".env", extra="allow")
 

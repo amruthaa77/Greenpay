@@ -1,12 +1,24 @@
 import uuid
-from typing import Dict, Any, List
+import base64
+import json
+import logging
+from typing import Dict, Any, List, Optional
+import httpx
 from app.services.reward_engine import DEFAULT_RATES
+from app.core.config import settings
+
+logger = logging.getLogger("uvicorn.error")
+
+class VisionProviderNotConfiguredError(Exception):
+    """Raised when an actual image is provided for AI vision analysis but no provider API key is set."""
+    pass
 
 class AIClassifierService:
     """
     Authoritative Waste Vision Classifier Service for GreenPay Dry-Waste Operations.
-    Provides deterministic heuristic classification for sample presets with authoritative
-    rates dynamically pulled from RewardEngine.DEFAULT_RATES.
+    Provides real multimodal LLM vision analysis for uploaded image bytes, plus
+    deterministic fallback classification for demo/training sample presets.
+    Authoritative rates are dynamically extracted from RewardEngine.DEFAULT_RATES.
     """
 
     CATALOG: Dict[str, Dict[str, Any]] = {
@@ -181,4 +193,175 @@ class AIClassifierService:
             "disclaimer": "AI prediction is provided as field assistance only. Administrative confirmation or override is required.",
             "visual_indicators": data["visual_indicators"],
             "suggested_action": data["suggested_action"],
+        }
+
+    @classmethod
+    def _normalize_category(cls, raw_text: str) -> str:
+        s = (raw_text or "").strip().lower()
+        if "plastic" in s or "bottle" in s or "wrapper" in s or "polymer" in s or "packet" in s or "container" in s:
+            return "Clean Plastic Packaging"
+        if "metal" in s or "can" in s or "tin" in s or "aluminum" in s or "foil" in s:
+            return "Recyclable Metals & Cans"
+        if "paper" in s or "cardboard" in s or "box" in s or "newspaper" in s or "carton" in s:
+            return "Paper & Cardboard"
+        return "Contaminated Waste"
+
+    @classmethod
+    async def classify_real_image(
+        cls,
+        image_bytes: bytes,
+        mime_type: str,
+        filename: str = "upload.jpg"
+    ) -> Dict[str, Any]:
+        """
+        Analyze real image bytes using configured multimodal vision provider (Google Gemini or OpenAI).
+        If no API key is configured, raises VisionProviderNotConfiguredError.
+        """
+        gemini_key = settings.GEMINI_API_KEY or settings.VISION_API_KEY
+        openai_key = settings.OPENAI_API_KEY
+
+        if not gemini_key and not openai_key:
+            raise VisionProviderNotConfiguredError(
+                "No vision model provider configured. Please set GEMINI_API_KEY or OPENAI_API_KEY "
+                "in the server environment variables to enable real image analysis."
+            )
+
+        prompt = (
+            "You are a professional municipal dry-waste segregation vision assistant for Bengaluru (BBMP GreenPay).\n"
+            "Analyze this uploaded image and classify the waste item into EXACTLY ONE of these 4 categories:\n"
+            "1. 'Paper & Cardboard' (Newspapers, office paper, magazines, cardboard packaging, cartons)\n"
+            "2. 'Recyclable Metals & Cans' (Aluminum beverage cans, clean food tins, clean foil)\n"
+            "3. 'Clean Plastic Packaging' (Clean PET/HDPE bottles, containers, clean chips wrappers and packets)\n"
+            "4. 'Contaminated Waste' (Greasy/soiled paper or plastics, wet food/kitchen scraps, organic waste, unsegregated garbage, hazardous waste)\n\n"
+            "Important guidelines:\n"
+            "- Inspect the actual visual characteristics of the item in the image.\n"
+            "- If there is organic kitchen food residue or grease, classify as 'Contaminated Waste' with action 'REJECT'.\n"
+            "- If it is clean dry recyclable material, classify accordingly with action 'ACCEPT'.\n"
+            "- Provide a genuine confidence score between 0.00 and 1.00 based on visual clarity and certainty.\n"
+            "- Respond strictly in valid JSON format matching this schema:\n"
+            "{\n"
+            "  \"detected_object\": \"<concise item name, e.g. Corrugated Cardboard Box, Crushed Aluminum Soda Can>\",\n"
+            "  \"classification\": \"<One of the 4 exact categories>\",\n"
+            "  \"confidence\": <float between 0.0 and 1.0>,\n"
+            "  \"description\": \"<Brief 1-2 sentence explanation of visual condition and reasoning>\",\n"
+            "  \"action\": \"<ACCEPT or REJECT>\",\n"
+            "  \"visual_indicators\": [\"<feature 1>\", \"<feature 2>\"],\n"
+            "  \"suggested_action\": \"<Recommended operator action>\"\n"
+            "}"
+        )
+
+        base64_img = base64.b64encode(image_bytes).decode("utf-8")
+        parsed: Dict[str, Any] = {}
+
+        if gemini_key:
+            model_name = settings.VISION_MODEL or "gemini-1.5-flash"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent?key={gemini_key}"
+            payload = {
+                "contents": [{
+                    "role": "user",
+                    "parts": [
+                        {"text": prompt},
+                        {
+                            "inline_data": {
+                                "mime_type": mime_type,
+                                "data": base64_img
+                            }
+                        }
+                    ]
+                }],
+                "generationConfig": {
+                    "response_mime_type": "application/json",
+                    "temperature": 0.1
+                }
+            }
+            async with httpx.AsyncClient(timeout=25.0) as client:
+                resp = await client.post(url, json=payload)
+                if resp.status_code != 200:
+                    logger.error(f"Gemini API error {resp.status_code}: {resp.text}")
+                    raise RuntimeError(f"Vision provider API returned HTTP {resp.status_code}: {resp.text[:200]}")
+                data = resp.json()
+                text_content = data["candidates"][0]["content"]["parts"][0]["text"]
+                parsed = json.loads(text_content)
+        elif openai_key:
+            url = "https://api.openai.com/v1/chat/completions"
+            payload = {
+                "model": "gpt-4o-mini",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are a professional municipal dry-waste segregation vision assistant for Bengaluru (BBMP GreenPay). Return JSON strictly."
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": f"data:{mime_type};base64,{base64_img}"}
+                            }
+                        ]
+                    }
+                ],
+                "response_format": {"type": "json_object"},
+                "temperature": 0.1
+            }
+            async with httpx.AsyncClient(timeout=25.0) as client:
+                resp = await client.post(url, json=payload, headers={"Authorization": f"Bearer {openai_key}"})
+                if resp.status_code != 200:
+                    logger.error(f"OpenAI API error {resp.status_code}: {resp.text}")
+                    raise RuntimeError(f"Vision provider API returned HTTP {resp.status_code}: {resp.text[:200]}")
+                data = resp.json()
+                text_content = data["choices"][0]["message"]["content"]
+                parsed = json.loads(text_content)
+
+        # Normalize outputs
+        category = cls._normalize_category(parsed.get("classification", ""))
+        action = "REJECT" if category == "Contaminated Waste" or str(parsed.get("action", "")).upper() == "REJECT" else "ACCEPT"
+        
+        try:
+            confidence = float(parsed.get("confidence", 0.85))
+        except (ValueError, TypeError):
+            confidence = 0.85
+        confidence = round(max(0.05, min(0.99, confidence)), 2)
+
+        detected_object = parsed.get("detected_object", "Detected Waste Object")
+        description = parsed.get("description", f"Visual analysis complete. Item identified as {category}.")
+        visual_indicators = parsed.get("visual_indicators", ["Visual image features verified by vision model"])
+        if not isinstance(visual_indicators, list):
+            visual_indicators = [str(visual_indicators)]
+        suggested_action = parsed.get("suggested_action", f"Verify item and record under {category}")
+
+        # Authoritative rates from RewardEngine.DEFAULT_RATES
+        rate_ind = None
+        rate_comm = None
+        pen_ind = None
+        pen_comm = None
+
+        if action == "ACCEPT":
+            ind_cfg = DEFAULT_RATES.get("Individual", {}).get(category, {"rate_per_kg": 0.0})
+            comm_cfg = DEFAULT_RATES.get("Commercial", {}).get(category, {"rate_per_kg": 0.0})
+            rate_ind = ind_cfg.get("rate_per_kg", 0.0)
+            rate_comm = comm_cfg.get("rate_per_kg", 0.0)
+        else: # REJECT / Contaminated
+            cont_ind = DEFAULT_RATES.get("Individual", {}).get("Contaminated Waste", {"penalty": 15.0})
+            cont_comm = DEFAULT_RATES.get("Commercial", {}).get("Contaminated Waste", {"penalty": 30.0})
+            pen_ind = -abs(cont_ind.get("penalty", 15.0))
+            pen_comm = -abs(cont_comm.get("penalty", 30.0))
+
+        return {
+            "classification_id": str(uuid.uuid4()),
+            "detected_object": detected_object,
+            "classification": category,
+            "predicted_category": category,
+            "confidence": confidence,
+            "description": description,
+            "action": action,
+            "rate_individual": rate_ind,
+            "rate_commercial": rate_comm,
+            "penalty_individual": pen_ind,
+            "penalty_commercial": pen_comm,
+            "is_assistance_only": True,
+            "disclaimer": "AI prediction is provided as field assistance only. Administrative confirmation or override is required.",
+            "visual_indicators": visual_indicators,
+            "suggested_action": suggested_action,
         }

@@ -18,6 +18,7 @@ import {
   ArrowUpRight,
   CheckCircle2,
   Gift,
+  QrCode,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -152,7 +153,16 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ onNavigate }) => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onNavigate('/my-qr')}
+              className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-100 border-emerald-400/30 font-bold"
+              leftIcon={<QrCode className="w-4 h-4 text-emerald-300" />}
+            >
+              My QR: {user?.greenpay_id || session?.greenpay_id || 'GP-000001'}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -165,6 +175,39 @@ export const UserDashboard: React.FC<UserDashboardProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      {/* Permanent Citizen QR Banner Card */}
+      <Card className="bg-linear-to-r from-emerald-50/80 to-teal-50/80 dark:from-emerald-950/30 dark:to-teal-950/30 border-emerald-200/80 dark:border-emerald-800">
+        <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <QrCode className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-200">
+                  Permanent Citizen QR
+                </span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-200/70 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200 text-xs font-mono font-bold">
+                  {user?.greenpay_id || session?.greenpay_id || 'GP-000001'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                Show this QR when handing over dry recyclable waste to door-to-door collectors for instant Green Points.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => onNavigate('/my-qr')}
+            className="w-full sm:w-auto shrink-0"
+            leftIcon={<QrCode className="w-4 h-4" />}
+          >
+            Show My QR
+          </Button>
+        </div>
+      </Card>
 
       {/* 4 Executive KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">

@@ -16,6 +16,12 @@ logger = logging.getLogger("uvicorn.error")
 async def lifespan(app: FastAPI):
     # Ensure tables exist on startup
     Base.metadata.create_all(bind=engine)
+    # Apply schema updates and backfill GreenPay IDs
+    try:
+        from app.migration import run_migrations
+        run_migrations()
+    except Exception as e:
+        logger.error(f"Migration notification: {e}")
     # Ensure demo seed data exists safely and idempotently
     try:
         from app.seed import seed_database

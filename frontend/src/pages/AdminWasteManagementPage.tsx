@@ -15,11 +15,20 @@ import {
   X,
   Scale,
   Award,
+  QrCode,
+  UserCheck,
 } from 'lucide-react';
-import { WasteType, ClaimStatus, AIClassificationResult, WasteEntry } from '../types';
+import {
+  WasteType,
+  ClaimStatus,
+  VisionClassificationResult,
+  WasteEntry,
+  CitizenLookupResult,
+} from '../types';
 import { useOffline } from '../context/OfflineContext';
 import { useLanguage } from '../context/LanguageContext';
-import { api } from '../services/api';
+import { api, classifyWasteVision } from '../services/api';
+import { CitizenQRScannerModal } from '../components/CitizenQRScannerModal';
 import {
   PageHeader,
   Card,
@@ -44,11 +53,17 @@ export const AdminWasteManagementPage: React.FC = () => {
   const [claimStatus, setClaimStatus] = useState<ClaimStatus>('Processed');
   const [feedback, setFeedback] = useState('');
 
+  // Citizen QR Identification state
+  const [qrScannerOpen, setQrScannerOpen] = useState(false);
+  const [identifiedCitizen, setIdentifiedCitizen] = useState<CitizenLookupResult | null>(null);
+
   // AI Classification state
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiResult, setAiResult] = useState<AIClassificationResult | null>(null);
-  const [selectedPreset, setSelectedPreset] = useState('plastic_bottle');
+  const [aiError, setAiError] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<VisionClassificationResult | null>(null);
+  const [selectedAiClassificationId, setSelectedAiClassificationId] = useState<string | null>(null);
+  const [selectedPreset, setSelectedPreset] = useState('clean_pet_bottles_chips_wrappers');
 
   // Confirmation & submission state
   const [confirmationOpen, setConfirmationOpen] = useState(false);
@@ -77,25 +92,44 @@ export const AdminWasteManagementPage: React.FC = () => {
 
   const liveCalc = getLiveCalculation(wasteType, weightKg);
 
-  const handleTriggerAI = async () => {
-    setAiLoading(true);
+  const handleOpenAIModal = () => {
     setAiModalOpen(true);
+    setAiError(null);
+  };
+
+  const handleRunAIVision = async () => {
+    setAiLoading(true);
+    setAiError(null);
     try {
-      const data = await api.post<AIClassificationResult>('/admin/ai/classify', {
-        image_name_or_keyword: selectedPreset,
-      });
+      const data = await classifyWasteVision(selectedPreset);
       setAiResult(data);
     } catch (err: any) {
       console.error('AI Classification error:', err);
+      setAiError(err.message || 'Vision classification failed. Please try again.');
     } finally {
       setAiLoading(false);
     }
   };
 
-  const handleConfirmAI = (category: WasteType) => {
-    setWasteType(category);
-    setFeedback(`AI classification assistance verified: ${aiResult?.detected_object}`);
+  const handleAcceptAI = () => {
+    if (!aiResult) return;
+    setWasteType(aiResult.classification);
+    setSelectedAiClassificationId(aiResult.classification_id);
+    setFeedback(
+      `AI Vision verified: ${aiResult.detected_object} (${aiResult.classification}, ${(aiResult.confidence * 100).toFixed(0)}% confidence)`
+    );
     setAiModalOpen(false);
+  };
+
+  const handleCitizenResolved = (citizen: CitizenLookupResult) => {
+    setIdentifiedCitizen(citizen);
+    setMeterNumber(citizen.greenpay_id);
+    setErrorMessage(null);
+  };
+
+  const handleClearCitizen = () => {
+    setIdentifiedCitizen(null);
+    setMeterNumber('');
   };
 
   const handleValidateForm = (e: React.FormEvent) => {
@@ -128,30 +162,33 @@ export const AdminWasteManagementPage: React.FC = () => {
 
     if (!isOnline) {
       queueRecord({
-        meter_number: meterNumber.trim().toUpperCase(),
+        meter_number: identifiedCitizen?.meter_number || meterNumber.trim().toUpperCase(),
         waste_type: wasteType,
         weight_kg: kg,
         collection_date: new Date().toISOString(),
         claim_status: claimStatus,
         admin_feedback: feedback.trim() || undefined,
-        ai_classification_id: aiResult?.classification_id,
+        ai_classification_id: selectedAiClassificationId || undefined,
       });
       setConfirmationOpen(false);
       setSubmitting(false);
       setSuccessMessage(t('waste_mgmt.offline_saved'));
       setWeightKg('');
       setFeedback('');
+      setSelectedAiClassificationId(null);
+      setAiResult(null);
       return;
     }
 
     try {
       const resp = await api.post<WasteEntry>('/admin/waste', {
-        meter_number: meterNumber.trim().toUpperCase(),
+        meter_number: identifiedCitizen?.meter_number || meterNumber.trim().toUpperCase(),
+        greenpay_id: identifiedCitizen?.greenpay_id || (meterNumber.trim().toUpperCase().startsWith('GP-') ? meterNumber.trim().toUpperCase() : undefined),
         waste_type: wasteType,
         weight_kg: kg,
         claim_status: claimStatus,
         admin_feedback: feedback.trim() || undefined,
-        ai_classification_id: aiResult?.classification_id,
+        ai_classification_id: selectedAiClassificationId || undefined,
       });
 
       setConfirmationOpen(false);
@@ -159,15 +196,18 @@ export const AdminWasteManagementPage: React.FC = () => {
         t('waste_mgmt.success_msg', {
           weight: resp.weight_kg,
           type: translateWasteType(resp.waste_type),
-          meter: resp.meter_number || meterNumber,
+          meter: resp.greenpay_id || resp.meter_number || meterNumber,
           amount: resp.reward_amount ?? 0,
         })
       );
       setWeightKg('');
       setFeedback('');
       setAiResult(null);
+      setSelectedAiClassificationId(null);
+      setIdentifiedCitizen(null);
+      setMeterNumber('');
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to record waste entry. Please verify the meter number.');
+      setErrorMessage(err.message || 'Failed to record waste entry. Please verify the meter number or GreenPay ID.');
       setConfirmationOpen(false);
     } finally {
       setSubmitting(false);
@@ -181,14 +221,24 @@ export const AdminWasteManagementPage: React.FC = () => {
         subtitle={t('waste_mgmt.subtitle')}
         badge={<Badge variant="purple" dot>{t('waste_mgmt.badge')}</Badge>}
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleTriggerAI}
-            leftIcon={<Cpu className="w-4 h-4 text-purple-600" />}
-          >
-            {t('waste_mgmt.btn_ai')}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setQrScannerOpen(true)}
+              leftIcon={<QrCode className="w-4 h-4 text-emerald-600" />}
+            >
+              Scan Citizen QR
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleOpenAIModal}
+              leftIcon={<Cpu className="w-4 h-4 text-purple-600" />}
+            >
+              {t('waste_mgmt.btn_ai')}
+            </Button>
+          </div>
         }
       />
 
@@ -218,16 +268,72 @@ export const AdminWasteManagementPage: React.FC = () => {
               <CardDescription>Enter verified scale reading from door-to-door or collection center</CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Identified Citizen Context Card */}
+              {identifiedCitizen ? (
+                <div className="mb-5 p-4 bg-emerald-50/80 border border-emerald-200 rounded-2xl">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                        <UserCheck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <h4 className="text-sm font-bold text-slate-900">{identifiedCitizen.name}</h4>
+                          <Badge variant="emerald" size="xs">QR Verified</Badge>
+                        </div>
+                        <div className="text-xs text-slate-600 font-mono mt-0.5">
+                          ID: <strong className="text-emerald-800">{identifiedCitizen.greenpay_id}</strong> • Meter: {identifiedCitizen.meter_number}
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={handleClearCitizen}
+                      className="text-slate-500 hover:text-rose-600 text-xs"
+                      leftIcon={<X className="w-3.5 h-3.5" />}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-emerald-100 flex items-center justify-between text-xs text-slate-600">
+                    <span>Ward: <strong>{identifiedCitizen.ward_name || 'BBMP Ward'}</strong></span>
+                    <span>Current Balance: <strong className="text-emerald-700 font-mono">+{(identifiedCitizen.green_points ?? identifiedCitizen.green_points_balance ?? 0).toFixed(1)} GP</strong></span>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-4 flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200/70 text-xs">
+                  <div className="flex items-center space-x-2 text-slate-600">
+                    <QrCode className="w-4 h-4 text-emerald-600" />
+                    <span>Have citizen's QR code?</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="xs"
+                    onClick={() => setQrScannerOpen(true)}
+                  >
+                    Scan QR
+                  </Button>
+                </div>
+              )}
+
               <form onSubmit={handleValidateForm} className="space-y-4">
                 <Input
-                  label="Citizen Electricity Meter Number"
+                  label="Citizen GreenPay ID or Electricity Meter Number"
                   type="text"
                   value={meterNumber}
-                  onChange={(e) => setMeterNumber(e.target.value.toUpperCase())}
-                  placeholder="e.g. BESCOM-IND-104928"
+                  onChange={(e) => {
+                    const val = e.target.value.toUpperCase();
+                    setMeterNumber(val);
+                    if (identifiedCitizen && val !== identifiedCitizen.greenpay_id && val !== identifiedCitizen.meter_number) {
+                      setIdentifiedCitizen(null);
+                    }
+                  }}
+                  placeholder="e.g. GP-000001 or BESCOM-IND-104928"
                   required
                   leftIcon={<Zap className="w-4 h-4 text-emerald-700" />}
-                  helperText="Format: BESCOM-IND-XXXXXX or BESCOM-COM-XXXXXX"
+                  helperText="Enter citizen's permanent GreenPay ID (GP-XXXXXX) or BESCOM meter number"
                 />
 
                 <div>
@@ -406,13 +512,25 @@ export const AdminWasteManagementPage: React.FC = () => {
         subtitle="Simulate camera snapshot analysis for automated category detection"
         footer={
           aiResult ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => handleConfirmAI(aiResult.predicted_category)}
-            >
-              Accept ({aiResult.predicted_category})
-            </Button>
+            <div className="flex items-center justify-between w-full">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setAiModalOpen(false)}
+              >
+                Close
+              </Button>
+              <Button
+                variant={aiResult.action === 'ACCEPT' ? 'primary' : 'danger'}
+                size="sm"
+                onClick={handleAcceptAI}
+                leftIcon={aiResult.action === 'ACCEPT' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              >
+                {aiResult.action === 'ACCEPT'
+                  ? `Accept (${aiResult.classification})`
+                  : 'Apply Contamination Penalty'}
+              </Button>
+            </div>
           ) : undefined
         }
       >
@@ -424,46 +542,90 @@ export const AdminWasteManagementPage: React.FC = () => {
             <select
               value={selectedPreset}
               onChange={(e) => setSelectedPreset(e.target.value)}
-              className="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800"
+              className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-600/20"
             >
-              <option value="plastic_bottle">Clean PET Bottles & Chips Wrappers (Clean Plastic Packaging)</option>
-              <option value="metal_can">Aluminum Beverage Cans & Tins (Recyclable Metals & Cans)</option>
-              <option value="cardboard_box">Corrugated Packaging & Newspapers (Paper & Cardboard)</option>
-              <option value="food_waste">Wet Kitchen Scraps (REJECT - Non-Accepted Wet Waste)</option>
-              <option value="e_waste">Consumer Lithium Battery / Cell (Hazardous Contamination)</option>
-              <option value="mixed_dirty">Food Grease Contaminated Container (Contaminated Waste)</option>
+              <option value="clean_pet_bottles_chips_wrappers">Clean PET Bottles & Chips Wrappers (Clean Plastic Packaging)</option>
+              <option value="clean_plastic_bottle">Clean Rigid Plastic Containers / Bottles (Clean Plastic Packaging)</option>
+              <option value="clean_cardboard">Clean Corrugated Cardboard Boxes (Paper & Cardboard)</option>
+              <option value="clean_newspaper">Clean Newspapers & Office Paper (Paper & Cardboard)</option>
+              <option value="clean_aluminum_can">Clean Aluminum Beverage Cans (Recyclable Metals & Cans)</option>
+              <option value="clean_metal_tin">Clean Metal Food Tins (Recyclable Metals & Cans)</option>
+              <option value="clean_foil">Clean Aluminum Household Foil (Recyclable Metals & Cans)</option>
+              <option value="wet_food_scraps">Wet Kitchen Food Scraps (REJECT - Contaminated / Non-Accepted)</option>
+              <option value="mixed_contaminated">Greasy Pizza Box / Mixed Residual (REJECT - Contaminated Waste)</option>
             </select>
           </div>
 
           <Button
             variant="outline"
             size="sm"
-            onClick={handleTriggerAI}
+            onClick={handleRunAIVision}
             isLoading={aiLoading}
-            className="w-full"
+            className="w-full py-2.5 text-purple-700 border-purple-200 hover:bg-purple-50"
             leftIcon={<Camera className="w-4 h-4 text-purple-600" />}
           >
-            {aiLoading ? 'Analyzing Sample with AI...' : 'Run Vision Model Analysis'}
+            {aiLoading ? 'Analyzing Sample with AI Vision...' : 'Run Vision Model Analysis'}
           </Button>
 
+          {aiError && (
+            <Alert
+              type="error"
+              message={aiError}
+              onClose={() => setAiError(null)}
+            />
+          )}
+
           {aiResult && (
-            <div className="p-4 bg-purple-50 rounded-2xl border border-purple-200/80 space-y-2 text-xs">
+            <div className="p-4 bg-purple-50/70 rounded-2xl border border-purple-200/80 space-y-3 text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-purple-900">{aiResult.detected_object}</span>
-                <Badge variant="purple" size="xs">
+                <span className="font-bold text-slate-900 text-sm">{aiResult.detected_object}</span>
+                <Badge
+                  variant={aiResult.confidence >= 0.85 ? 'purple' : 'amber'}
+                  size="xs"
+                >
                   {(aiResult.confidence * 100).toFixed(0)}% Confidence
                 </Badge>
               </div>
-              <p className="text-purple-800">
-                Recommended Classification: <strong>{aiResult.predicted_category}</strong>
-              </p>
-              <p className="text-[11px] text-purple-700/80 leading-relaxed">
-                {(aiResult as any).reasoning || aiResult.suggested_action}
+
+              <div className="grid grid-cols-2 gap-2 py-2 border-y border-purple-100 text-xs">
+                <div>
+                  <span className="text-slate-500 block text-[10px] font-bold uppercase">Classification</span>
+                  <span className="font-bold text-purple-950">{aiResult.classification}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block text-[10px] font-bold uppercase">Reward Rate</span>
+                  <span className={`font-bold ${aiResult.action === 'ACCEPT' ? 'text-emerald-700' : 'text-rose-600'}`}>
+                    {aiResult.action === 'ACCEPT'
+                      ? `+${aiResult.points_rate_gp_per_kg ?? aiResult.rate_individual ?? 0} GP/kg`
+                      : `-${aiResult.contamination_deduction_gp ?? aiResult.penalty_individual ?? 15} GP penalty`}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 text-[11px]">Model Recommendation:</span>
+                <Badge
+                  variant={aiResult.action === 'ACCEPT' ? 'emerald' : 'rose'}
+                  size="xs"
+                >
+                  {aiResult.action === 'ACCEPT' ? 'VERIFIED ACCEPT' : 'REJECT / PENALIZE'}
+                </Badge>
+              </div>
+
+              <p className="text-[11px] text-slate-600 leading-relaxed bg-white/70 p-2.5 rounded-xl border border-purple-100">
+                {aiResult.description}
               </p>
             </div>
           )}
         </div>
       </Modal>
+
+      {/* Citizen QR Scanner Modal */}
+      <CitizenQRScannerModal
+        isOpen={qrScannerOpen}
+        onClose={() => setQrScannerOpen(false)}
+        onCitizenResolved={handleCitizenResolved}
+      />
     </div>
   );
 };

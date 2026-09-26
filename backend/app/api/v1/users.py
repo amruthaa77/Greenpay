@@ -97,6 +97,7 @@ def get_user_dashboard(
             "id": current_user.id,
             "name": profile.name if profile else "Citizen",
             "meter_number": current_user.meter_number,
+            "greenpay_id": current_user.greenpay_id,
             "user_type": profile.user_type if profile else "Individual",
             "ward_name": profile.ward.name if profile and profile.ward else "Bengaluru",
             "ward_number": profile.ward.ward_number if profile and profile.ward else 0,

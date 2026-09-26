@@ -33,6 +33,7 @@ class WasteCreateRequest(BaseModel):
     admin_feedback: Optional[str] = None
     photo_url: Optional[str] = None
     ai_classification_id: Optional[str] = None
+    greenpay_id: Optional[str] = None
     idempotency_key: Optional[str] = None # For offline sync deduplication
 
     @field_validator("waste_type")
@@ -80,6 +81,8 @@ class WasteEntryResponse(BaseModel):
     user_id: str
     user_name: Optional[str] = None
     meter_number: Optional[str] = None
+    greenpay_id: Optional[str] = None
+    ai_classification_id: Optional[str] = None
     user_type: Optional[str] = None
     ward_name: Optional[str] = None
     recorder_name: Optional[str] = None

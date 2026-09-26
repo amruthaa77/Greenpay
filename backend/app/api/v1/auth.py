@@ -27,6 +27,20 @@ from app.api.deps import get_current_user
 
 router = APIRouter()
 
+def get_next_greenpay_id(db: Session) -> str:
+    """Generate the next unique, permanent, sequential GreenPay ID (e.g. GP-000001)."""
+    existing_gp_users = db.query(User.greenpay_id).filter(User.greenpay_id.like("GP-%")).all()
+    max_num = 0
+    for (gp_id,) in existing_gp_users:
+        if gp_id and gp_id.startswith("GP-"):
+            try:
+                num = int(gp_id.replace("GP-", ""))
+                if num > max_num:
+                    max_num = num
+            except ValueError:
+                pass
+    return f"GP-{max_num + 1:06d}"
+
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register_user(
     data: UserRegisterRequest,
@@ -94,6 +108,7 @@ def register_user(
     # Create User
     new_user = User(
         meter_number=meter,
+        greenpay_id=get_next_greenpay_id(db),
         password_hash=get_password_hash(data.password),
         role="USER",
         is_active=True,
@@ -153,6 +168,7 @@ def register_user(
         role=new_user.role,
         meter_number=new_user.meter_number,
         user_id=new_user.id,
+        greenpay_id=new_user.greenpay_id,
         name=profile.name,
         user_type=profile.user_type,
         ward_name=ward.name,
@@ -186,6 +202,7 @@ def register_admin(
 
     new_admin = User(
         meter_number=meter,
+        greenpay_id=get_next_greenpay_id(db),
         password_hash=get_password_hash(data.password),
         role="ADMIN",
         is_active=True,
@@ -230,6 +247,7 @@ def register_admin(
         role=new_admin.role,
         meter_number=new_admin.meter_number,
         user_id=new_admin.id,
+        greenpay_id=new_admin.greenpay_id,
         name=profile.name,
         user_type="Individual",
         ward_name="BBMP Central HQ",
@@ -282,6 +300,7 @@ def login(
         role=user.role,
         meter_number=user.meter_number,
         user_id=user.id,
+        greenpay_id=user.greenpay_id,
         name=user_name,
         user_type=user_type,
         ward_name=ward_name,
@@ -324,6 +343,7 @@ def refresh_token(
         role=user.role,
         meter_number=user.meter_number,
         user_id=user.id,
+        greenpay_id=user.greenpay_id,
         name=user_name,
         user_type=user_type,
         ward_name=ward_name,
@@ -359,6 +379,7 @@ def get_current_user_profile(
     return UserResponse(
         id=current_user.id,
         meter_number=current_user.meter_number,
+        greenpay_id=current_user.greenpay_id,
         role=current_user.role,
         is_active=current_user.is_active,
         profile=profile_resp,

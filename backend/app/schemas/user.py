@@ -32,6 +32,7 @@ class UserProfileResponse(BaseModel):
 class UserResponse(BaseModel):
     id: str
     meter_number: str
+    greenpay_id: Optional[str] = None
     role: str
     is_active: bool
     profile: Optional[UserProfileResponse] = None
@@ -39,6 +40,18 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class CitizenLookupResponse(BaseModel):
+    user_id: str
+    greenpay_id: str
+    meter_number: str
+    name: str
+    user_type: str
+    ward_name: Optional[str] = None
+    ward_number: Optional[int] = None
+    green_points: float
+    green_score: float
+    is_active: bool
 
 class ScoreBreakdownComponent(BaseModel):
     name: str

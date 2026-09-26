@@ -59,6 +59,7 @@ class TokenResponse(BaseModel):
     role: str
     meter_number: str
     user_id: str
+    greenpay_id: Optional[str] = None
     name: str
     user_type: Optional[str] = None
     ward_name: Optional[str] = None

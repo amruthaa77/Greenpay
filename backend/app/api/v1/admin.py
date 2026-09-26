@@ -19,7 +19,14 @@ from app.schemas.analytics import AdminKPICards, WardAnalyticsItem, ForecastResp
 from app.schemas.waste import WasteCreateRequest, WasteUpdateRequest, WasteEntryResponse, WasteListResponse
 from app.schemas.reward import RewardRuleResponse, RewardRuleUpdateRequest, RewardAdjustmentRequest
 from app.schemas.anomaly import AnomalyResponse, AnomalyReviewRequest
-from app.schemas.ai import AIClassificationRequest, AIClassificationResponse, AIConfirmRequest
+from app.schemas.ai import (
+    AIClassificationRequest,
+    AIClassificationResponse,
+    AIConfirmRequest,
+    VisionClassifyRequest,
+    VisionClassifyResponse,
+)
+from app.schemas.user import CitizenLookupResponse
 from app.schemas.audit import AuditLogResponse, AuditListResponse
 from app.services.reward_engine import RewardEngine
 from app.services.anomaly_service import AnomalyDetector
@@ -289,14 +296,38 @@ def create_waste_entry(
     admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
-    # Find user by meter number
-    meter = data.meter_number.strip().upper()
-    user = db.query(User).filter(User.meter_number == meter).first()
+    # Find user by meter number or greenpay_id
+    raw_ident = (data.meter_number or "").strip().upper()
+    if raw_ident.startswith("GREENPAY:"):
+        raw_ident = raw_ident.replace("GREENPAY:", "").strip()
+
+    greenpay_id_val = (data.greenpay_id or "").strip().upper() if data.greenpay_id else None
+    if greenpay_id_val and greenpay_id_val.startswith("GREENPAY:"):
+        greenpay_id_val = greenpay_id_val.replace("GREENPAY:", "").strip()
+
+    user = None
+    if greenpay_id_val:
+        user = db.query(User).filter(User.greenpay_id == greenpay_id_val).first()
+    if not user and raw_ident:
+        user = db.query(User).filter(
+            or_(User.meter_number == raw_ident, User.greenpay_id == raw_ident)
+        ).first()
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Citizen with meter number '{meter}' does not exist. Please check the meter number."
+            detail=f"Citizen with identifier '{raw_ident or greenpay_id_val}' does not exist. Please check the meter number or GreenPay ID."
         )
+
+    # Validate AI classification ID if provided
+    ai_record = None
+    if data.ai_classification_id:
+        ai_record = db.query(AIClassification).filter(AIClassification.id == data.ai_classification_id).first()
+        if not ai_record:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"AI classification record '{data.ai_classification_id}' not found."
+            )
 
     # Idempotency check for offline sync
     if data.idempotency_key:
@@ -309,6 +340,8 @@ def create_waste_entry(
                 user_id=existing_tx.user_id,
                 user_name=user.profile.name if user.profile else "Citizen",
                 meter_number=user.meter_number,
+                greenpay_id=user.greenpay_id,
+                ai_classification_id=existing_tx.ai_classification_id,
                 user_type=user.profile.user_type if user.profile else "Individual",
                 ward_name=existing_tx.ward.name if existing_tx.ward else "Bengaluru",
                 recorder_name=admin.profile.name if admin.profile else "Admin",
@@ -345,15 +378,14 @@ def create_waste_entry(
         journey_stage=journey_stage,
         admin_feedback=data.admin_feedback,
         photo_url=data.photo_url,
+        ai_classification_id=ai_record.id if ai_record else None,
     )
     db.add(entry)
     db.flush()
 
     # Link AI classification if provided
-    if data.ai_classification_id:
-        ai_record = db.query(AIClassification).filter(AIClassification.id == data.ai_classification_id).first()
-        if ai_record:
-            ai_record.waste_entry_id = entry.id
+    if ai_record:
+        ai_record.waste_entry_id = entry.id
 
     # Create immutable financial reward entry
     reward_tx = RewardEngine.create_reward_entry(
@@ -414,6 +446,8 @@ def create_waste_entry(
         user_id=entry.user_id,
         user_name=user.profile.name if user.profile else "Citizen",
         meter_number=user.meter_number,
+        greenpay_id=user.greenpay_id,
+        ai_classification_id=entry.ai_classification_id,
         user_type=user.profile.user_type if user.profile else "Individual",
         ward_name=entry.ward.name if entry.ward else "Bengaluru",
         recorder_name=admin.profile.name if admin.profile else "Admin",
@@ -683,38 +717,125 @@ def review_anomaly(
     db.commit()
     return {"status": "success", "message": f"Anomaly marked as {data.status}."}
 
-@router.post("/ai/classify", response_model=AIClassificationResponse)
-def classify_waste_image(
-    data: AIClassificationRequest,
-    request: Request,
+@router.get("/citizens/by-greenpay-id/{greenpay_id}", response_model=CitizenLookupResponse)
+def get_citizen_by_greenpay_id(
+    greenpay_id: str,
     admin: User = Depends(get_current_admin),
     db: Session = Depends(get_db)
 ):
-    result = AIClassifierService.classify_image(data.image_name_or_keyword or "plastic_bottle")
-    
-    # Store initial AI prediction
+    # Normalize input (strip whitespace and optional 'GREENPAY:' URI scheme prefix)
+    raw_id = greenpay_id.strip()
+    if raw_id.upper().startswith("GREENPAY:"):
+        raw_id = raw_id[9:].strip()
+
+    raw_id = raw_id.upper()
+
+    # Validate format: must start with GP-
+    if not raw_id.startswith("GP-"):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Invalid GreenPay ID format '{greenpay_id}'. Must start with 'GP-'."
+        )
+
+    user = db.query(User).filter(User.greenpay_id == raw_id).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Citizen not found."
+        )
+
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Citizen account is inactive."
+        )
+
+    profile = user.profile
+    ward = profile.ward if profile and profile.ward else None
+
+    # Calculate wallet points from RewardTransaction
+    transactions = db.query(RewardTransaction).filter(RewardTransaction.user_id == user.id).all()
+    green_points = round(sum(t.amount for t in transactions), 1)
+
+    return CitizenLookupResponse(
+        user_id=user.id,
+        greenpay_id=user.greenpay_id,
+        meter_number=user.meter_number,
+        name=profile.name if profile else "Citizen",
+        user_type=profile.user_type if profile else "Individual",
+        ward_name=ward.name if ward else "Bengaluru",
+        ward_number=ward.ward_number if ward else None,
+        green_points=green_points,
+        green_score=profile.green_score if profile else 75.0,
+        is_active=user.is_active,
+    )
+
+def _handle_vision_classify(
+    preset_or_identifier: Optional[str],
+    admin: User,
+    db: Session
+) -> VisionClassifyResponse:
+    if not preset_or_identifier:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="A vision sample preset or image keyword is required."
+        )
+    try:
+        result = AIClassifierService.classify_image(preset_or_identifier)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(e)
+        )
+
+    # Store initial AI prediction in database
     ai_record = AIClassification(
         id=result["classification_id"],
         admin_id=admin.id,
-        image_url=data.image_name_or_keyword,
+        image_url=preset_or_identifier,
         detected_object=result["detected_object"],
-        predicted_category=result["predicted_category"],
+        predicted_category=result["classification"],
         confidence=result["confidence"],
-        admin_confirmed_category=result["predicted_category"], # default until confirmed
+        admin_confirmed_category=result["classification"],
     )
     db.add(ai_record)
     db.commit()
 
-    return AIClassificationResponse(
+    return VisionClassifyResponse(
         classification_id=result["classification_id"],
         detected_object=result["detected_object"],
-        predicted_category=result["predicted_category"],
+        classification=result["classification"],
+        predicted_category=result["classification"],
         confidence=result["confidence"],
+        description=result["description"],
+        action=result["action"],
+        rate_individual=result["rate_individual"],
+        rate_commercial=result["rate_commercial"],
+        penalty_individual=result["penalty_individual"],
+        penalty_commercial=result["penalty_commercial"],
         is_assistance_only=True,
         disclaimer=result["disclaimer"],
         visual_indicators=result["visual_indicators"],
         suggested_action=result["suggested_action"],
     )
+
+@router.post("/vision/classify", response_model=VisionClassifyResponse)
+def classify_waste_vision(
+    data: VisionClassifyRequest,
+    admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    identifier = data.preset or data.image_name_or_keyword
+    return _handle_vision_classify(identifier, admin, db)
+
+@router.post("/ai/classify", response_model=VisionClassifyResponse)
+def classify_waste_image(
+    data: AIClassificationRequest,
+    admin: User = Depends(get_current_admin),
+    db: Session = Depends(get_db)
+):
+    identifier = data.preset or data.image_name_or_keyword
+    return _handle_vision_classify(identifier, admin, db)
 
 @router.post("/ai/confirm")
 def confirm_ai_classification(

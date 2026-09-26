@@ -19,6 +19,7 @@ import {
   Building2,
   Bell,
   Gift,
+  QrCode,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -41,6 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const citizenLinks = [
     { route: '/dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
+    { route: '/my-qr', label: 'My GreenPay QR', icon: QrCode },
     { route: '/rewards', label: t('nav.essential_rewards') || 'Essential Rewards', icon: Gift },
     { route: '/wallet', label: t('nav.wallet') || 'Green Points Wallet', icon: Wallet },
     { route: '/waste-history', label: t('nav.waste_history'), icon: History },

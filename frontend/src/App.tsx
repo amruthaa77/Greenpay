@@ -14,6 +14,7 @@ import { UserDashboard } from './pages/UserDashboard';
 import { UserWasteHistoryPage } from './pages/UserWasteHistoryPage';
 import { UserWalletPage } from './pages/UserWalletPage';
 import { UserProfilePage } from './pages/UserProfilePage';
+import { UserQRPage } from './pages/UserQRPage';
 import { EnvironmentalImpactPage } from './pages/EnvironmentalImpactPage';
 import { EssentialRewardsPage } from './pages/EssentialRewardsPage';
 import { AdminDashboard } from './pages/AdminDashboard';
@@ -110,6 +111,8 @@ const AppContent: React.FC = () => {
     switch (currentRoute) {
       case '/dashboard':
         return <UserDashboard onNavigate={navigate} />;
+      case '/my-qr':
+        return <UserQRPage />;
       case '/rewards':
         return <EssentialRewardsPage onNavigate={navigate} />;
       case '/waste-history':

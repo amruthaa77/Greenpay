@@ -95,3 +95,56 @@ export const api = {
     request<T>(endpoint, { method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
   delete: <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
 };
+
+import type { VisionClassificationResult, CitizenLookupResult } from '../types';
+
+export const classifyWasteVision = async (preset: string): Promise<VisionClassificationResult> => {
+  try {
+    return await api.post<VisionClassificationResult>('/admin/vision/classify', { preset });
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.status === 0) {
+        throw new Error('Unable to connect to GreenPay services. Please ensure the backend server is running and try again.');
+      }
+      if (err.status === 401 || err.status === 403) {
+        throw new Error('Your admin session has expired. Please log in again.');
+      }
+      if (err.status === 422) {
+        throw new Error(err.message || 'Invalid vision sample preset selected.');
+      }
+      if (err.status >= 500) {
+        throw new Error('Vision classification failed. Please try again.');
+      }
+      throw new Error(err.message || 'Vision classification failed. Please try again.');
+    }
+    throw new Error('Unable to connect to GreenPay services. Please ensure the backend server is running and try again.');
+  }
+};
+
+export const resolveCitizenByGreenpayId = async (greenpayId: string): Promise<CitizenLookupResult> => {
+  try {
+    const cleanId = greenpayId.trim();
+    return await api.get<CitizenLookupResult>(`/admin/citizens/by-greenpay-id/${encodeURIComponent(cleanId)}`);
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.status === 0) {
+        throw new Error('Unable to connect to GreenPay services.');
+      }
+      if (err.status === 401 || err.status === 403) {
+        throw new Error('Your admin session has expired. Please log in again.');
+      }
+      if (err.status === 404) {
+        throw new Error('Citizen not found.');
+      }
+      if (err.status === 400) {
+        throw new Error(err.message || 'Citizen account is inactive.');
+      }
+      if (err.status === 422) {
+        throw new Error('Invalid GreenPay QR.');
+      }
+      throw new Error(err.message || 'Failed to resolve citizen.');
+    }
+    throw new Error('Unable to connect to GreenPay services.');
+  }
+};
+

@@ -24,11 +24,12 @@ class WasteEntry(BaseModel):
     
     admin_feedback = Column(Text, nullable=True)
     photo_url = Column(String(255), nullable=True)
+    ai_classification_id = Column(String(36), ForeignKey("ai_classifications.id", ondelete="SET NULL"), nullable=True, index=True)
     
     # Relationships
     user = relationship("User", back_populates="waste_entries", foreign_keys=[user_id])
     recorder = relationship("User", back_populates="recorded_waste", foreign_keys=[recorder_admin_id])
     ward = relationship("Ward", back_populates="waste_entries")
     reward_transactions = relationship("RewardTransaction", back_populates="waste_entry", cascade="all, delete-orphan")
-    ai_classification = relationship("AIClassification", back_populates="waste_entry", uselist=False)
+    ai_classification = relationship("AIClassification", foreign_keys=[ai_classification_id], uselist=False)
     anomalies = relationship("AnomalyFlag", back_populates="waste_entry", cascade="all, delete-orphan")

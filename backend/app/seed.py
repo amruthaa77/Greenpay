@@ -131,6 +131,7 @@ def seed_database():
         admin_user = User(
             id=str(uuid.uuid4()),
             meter_number="ADM-BLR-001",
+            greenpay_id="GP-000001",
             password_hash=admin_password,
             role="ADMIN",
             is_active=True,
@@ -219,10 +220,11 @@ def seed_database():
     ]
 
     created_users = []
-    for u in users_data:
+    for idx, u in enumerate(users_data, start=2):
         usr = User(
             id=str(uuid.uuid4()),
             meter_number=u["meter"],
+            greenpay_id=f"GP-{idx:06d}",
             password_hash=common_password,
             role="USER",
             is_active=True,

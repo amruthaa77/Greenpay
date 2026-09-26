@@ -16,5 +16,5 @@ class AIClassification(BaseModel):
     is_overridden = Column(Float, default=False)
     
     # Relationships
-    waste_entry = relationship("WasteEntry", back_populates="ai_classification")
+    waste_entry = relationship("WasteEntry", foreign_keys=[waste_entry_id], uselist=False)
     admin = relationship("User", foreign_keys=[admin_id])

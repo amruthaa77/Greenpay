@@ -16,7 +16,7 @@ Urban solid waste management in rapid-growth Indian metropolitan centers like Be
 GreenPay bridges Bengaluru citizens (electricity meter holders) with authorized BBMP municipal waste supervisors. Verified doorstep collections are converted into:
 - **Direct Financial Rewards in ₹**: Computed transparently using active municipal schedules on an immutable ledger.
 - **Demystified Green Scores**: An open 0–100 score reflecting segregation quality, consistency, and clean material recovery.
-- **AI-Assisted Classification & Human Governance**: Computer vision aids supervisors in identifying waste types, preserving human confirmation.
+- **Permanent Citizen QR Identification**: Instant doorstep citizen lookup via unique GP-XXXXXX QR codes before waste collection.
 - **Statistical Anomaly Safeguards**: Detects quantity spikes without unfair automated penalties.
 - **Ward-Level Intelligence**: Comparative analytics across Koramangala, Indiranagar, Jayanagar, and Whitefield with predictive next-month waste volume forecasting.
 
@@ -52,7 +52,7 @@ GreenPay bridges Bengaluru citizens (electricity meter holders) with authorized 
 2. **Strict Tenant & Data Isolation**: Citizen A cannot view Citizen B’s records or wallet balance; attempts to probe another user's ID return HTTP `403 Forbidden`.
 3. **Immutable Financial Ledger**: Financial entries in `reward_transactions` are append-only. Formulas are stored alongside amounts (e.g. `3.00 kg × ₹10.00/kg = ₹30.00`).
 4. **Offline-First Field Weighment**: Supervisors can log waste entries when disconnected. Entries queue locally and sync automatically when connectivity returns.
-5. **Human-in-the-Loop AI Vision Assist**: Machine learning acts as advice with clear confidence ratings; supervisors must confirm or override.
+5. **Permanent Citizen QR Verification**: Field supervisors scan or input permanent Citizen GreenPay QR IDs to resolve resident records instantly before weighment.
 6. **Defensible Predictive Forecasting**: Ordinary Least Squares (OLS) regression models next-month waste volume with $\pm 8.5\%$ confidence bounds.
 7. **Transparent Audit Trail**: Every administrative action, diff, and review is logged with actor attribution and IP address.
 
@@ -136,7 +136,7 @@ A 14-step interactive guided tour is accessible via the **“Demo Tour”** butt
 6. **Municipal Supervisor Operations Center** login.
 7. **Citizen Directory** with read-only identity protection.
 8. **Waste Entry Creation** with live reward formula preview.
-9. **AI Vision Classification Assist** with confidence ratings.
+9. **Citizen QR Identification & Rapid Tagging** for verified collection.
 10. **Automatic Ledger Reconciliation**.
 11. **Statistical Anomaly Interception** for volume spikes.
 12. **Supervisor Anomaly Review** with audit notes.

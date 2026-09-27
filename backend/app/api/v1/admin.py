@@ -4,8 +4,7 @@ import uuid
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query, status, Response, Request, UploadFile, File, Form
-from PIL import Image
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Response, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_, desc
 from app.database import get_db
@@ -14,25 +13,16 @@ from app.models.ward import Ward
 from app.models.waste import WasteEntry
 from app.models.reward import RewardRule, RewardTransaction
 from app.models.anomaly import AnomalyFlag
-from app.models.ai import AIClassification
 from app.models.audit import AuditLog
 from app.models.notification import Notification
 from app.schemas.analytics import AdminKPICards, WardAnalyticsItem, ForecastResponse
 from app.schemas.waste import WasteCreateRequest, WasteUpdateRequest, WasteEntryResponse, WasteListResponse
 from app.schemas.reward import RewardRuleResponse, RewardRuleUpdateRequest, RewardAdjustmentRequest
 from app.schemas.anomaly import AnomalyResponse, AnomalyReviewRequest
-from app.schemas.ai import (
-    AIClassificationRequest,
-    AIClassificationResponse,
-    AIConfirmRequest,
-    VisionClassifyRequest,
-    VisionClassifyResponse,
-)
 from app.schemas.user import CitizenLookupResponse
 from app.schemas.audit import AuditLogResponse, AuditListResponse
 from app.services.reward_engine import RewardEngine
 from app.services.anomaly_service import AnomalyDetector
-from app.services.ai_classifier import AIClassifierService, VisionProviderNotConfiguredError
 from app.services.predictive_service import PredictiveService
 from app.services.audit_service import log_audit_event
 from app.api.deps import get_current_admin
@@ -323,16 +313,6 @@ def create_waste_entry(
             detail=f"Citizen with identifier '{raw_ident or greenpay_id_val}' does not exist. Please check the meter number or GreenPay ID."
         )
 
-    # Validate AI classification ID if provided
-    ai_record = None
-    if data.ai_classification_id:
-        ai_record = db.query(AIClassification).filter(AIClassification.id == data.ai_classification_id).first()
-        if not ai_record:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"AI classification record '{data.ai_classification_id}' not found."
-            )
-
     # Idempotency check for offline sync
     if data.idempotency_key:
         existing_tx = db.query(WasteEntry).filter(WasteEntry.transaction_id.ilike(f"%{data.idempotency_key[:8]}%")).first()
@@ -382,14 +362,10 @@ def create_waste_entry(
         journey_stage=journey_stage,
         admin_feedback=data.admin_feedback,
         photo_url=data.photo_url,
-        ai_classification_id=ai_record.id if ai_record else None,
+        ai_classification_id=None,
     )
     db.add(entry)
     db.flush()
-
-    # Link AI classification if provided
-    if ai_record:
-        ai_record.waste_entry_id = entry.id
 
     # Create immutable financial reward entry
     reward_tx = RewardEngine.create_reward_entry(
@@ -773,221 +749,6 @@ def get_citizen_by_greenpay_id(
         green_score=profile.green_score if profile else 75.0,
         is_active=user.is_active,
     )
-
-def _handle_vision_classify(
-    preset_or_identifier: Optional[str],
-    admin: User,
-    db: Session
-) -> VisionClassifyResponse:
-    if not preset_or_identifier:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="A vision sample preset or image keyword is required."
-        )
-    try:
-        result = AIClassifierService.classify_image(preset_or_identifier)
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(e)
-        )
-
-    # Store initial AI prediction in database
-    ai_record = AIClassification(
-        id=result["classification_id"],
-        admin_id=admin.id,
-        image_url=preset_or_identifier,
-        detected_object=result["detected_object"],
-        predicted_category=result["classification"],
-        confidence=result["confidence"],
-        admin_confirmed_category=result["classification"],
-        is_overridden=False,
-    )
-    db.add(ai_record)
-    db.commit()
-
-    return VisionClassifyResponse(
-        classification_id=result["classification_id"],
-        detected_object=result["detected_object"],
-        classification=result["classification"],
-        predicted_category=result["classification"],
-        confidence=result["confidence"],
-        description=result["description"],
-        action=result["action"],
-        rate_individual=result["rate_individual"],
-        rate_commercial=result["rate_commercial"],
-        penalty_individual=result["penalty_individual"],
-        penalty_commercial=result["penalty_commercial"],
-        is_assistance_only=True,
-        disclaimer=result["disclaimer"],
-        visual_indicators=result["visual_indicators"],
-        suggested_action=result["suggested_action"],
-    )
-
-@router.post("/vision/classify", response_model=VisionClassifyResponse)
-async def classify_waste_vision(
-    request: Request,
-    image: Optional[UploadFile] = File(None),
-    preset: Optional[str] = Form(None),
-    admin: User = Depends(get_current_admin),
-    db: Session = Depends(get_db)
-):
-    # Support backward-compatible JSON payloads {"preset": "..."}
-    if not image and preset is None and "application/json" in request.headers.get("content-type", ""):
-        try:
-            body = await request.json()
-            if isinstance(body, dict):
-                preset = body.get("preset") or body.get("image_name_or_keyword")
-        except Exception:
-            pass
-
-    # 1. Real Image Vision Processing
-    if image is not None:
-        image_bytes = await image.read()
-        if len(image_bytes) == 0:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Uploaded image file is empty (0 bytes)."
-            )
-        if len(image_bytes) > 10 * 1024 * 1024:
-            raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail="Image file exceeds maximum allowable size of 10MB."
-            )
-
-        # Validate with Pillow
-        try:
-            pil_img = Image.open(io.BytesIO(image_bytes))
-            pil_img.verify()
-            pil_img = Image.open(io.BytesIO(image_bytes))
-            fmt = (pil_img.format or "").upper()
-            if fmt not in ["JPEG", "JPG", "PNG", "WEBP"]:
-                raise ValueError(f"Unsupported format: {fmt}")
-            mime_type = f"image/{fmt.lower()}"
-            if mime_type == "image/jpg":
-                mime_type = "image/jpeg"
-        except Exception:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Uploaded file is not a valid image format. Only JPEG, PNG, and WEBP are supported."
-            )
-
-        try:
-            result = await AIClassifierService.classify_real_image(
-                image_bytes=image_bytes,
-                mime_type=mime_type,
-                filename=image.filename or "waste_capture.jpg"
-            )
-        except VisionProviderNotConfiguredError as e:
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=str(e)
-            )
-        except Exception as e:
-            logger.exception(f"Vision model error: {e}")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Vision model analysis failed: {str(e)}"
-            )
-
-        image_label = f"upload:{image.filename or 'captured_waste.jpg'}"
-
-    # 2. Demo Sample Preset Processing
-    elif preset:
-        try:
-            result = AIClassifierService.classify_image(preset)
-        except ValueError as e:
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=str(e)
-            )
-        image_label = f"preset:{preset}"
-    else:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="An image file (multipart/form-data) or a demo sample preset is required."
-        )
-
-    # 3. Persist to database
-    ai_record = AIClassification(
-        id=result["classification_id"],
-        admin_id=admin.id,
-        image_url=image_label[:255],
-        detected_object=result["detected_object"],
-        predicted_category=result["classification"],
-        confidence=result["confidence"],
-        admin_confirmed_category=result["classification"],
-        is_overridden=False,
-    )
-    db.add(ai_record)
-    db.commit()
-
-    return VisionClassifyResponse(
-        classification_id=result["classification_id"],
-        detected_object=result["detected_object"],
-        classification=result["classification"],
-        predicted_category=result["classification"],
-        confidence=result["confidence"],
-        description=result["description"],
-        action=result["action"],
-        rate_individual=result["rate_individual"],
-        rate_commercial=result["rate_commercial"],
-        penalty_individual=result["penalty_individual"],
-        penalty_commercial=result["penalty_commercial"],
-        is_assistance_only=True,
-        disclaimer=result["disclaimer"],
-        visual_indicators=result["visual_indicators"],
-        suggested_action=result["suggested_action"],
-    )
-
-@router.post("/ai/classify", response_model=VisionClassifyResponse)
-def classify_waste_image(
-    data: AIClassificationRequest,
-    admin: User = Depends(get_current_admin),
-    db: Session = Depends(get_db)
-):
-    identifier = data.preset or data.image_name_or_keyword
-    return _handle_vision_classify(identifier, admin, db)
-
-@router.post("/ai/confirm")
-def confirm_ai_classification(
-    data: AIConfirmRequest,
-    request: Request,
-    admin: User = Depends(get_current_admin),
-    db: Session = Depends(get_db)
-):
-    ai_record = db.query(AIClassification).filter(AIClassification.id == data.classification_id).first()
-    if not ai_record:
-        # Create record if classification_id wasn't in DB
-        ai_record = AIClassification(
-            id=data.classification_id,
-            admin_id=admin.id,
-            detected_object="Field Capture",
-            predicted_category=data.confirmed_category,
-            confidence=0.92,
-            admin_confirmed_category=data.confirmed_category,
-            waste_entry_id=data.waste_entry_id,
-        )
-        db.add(ai_record)
-    else:
-        ai_record.admin_confirmed_category = data.confirmed_category
-        ai_record.is_overridden = (ai_record.predicted_category != data.confirmed_category)
-        if data.waste_entry_id:
-            ai_record.waste_entry_id = data.waste_entry_id
-
-    log_audit_event(
-        db=db,
-        action="AI_CONFIRM",
-        affected_entity_type="AIClassification",
-        actor_id=admin.id,
-        actor_role="ADMIN",
-        affected_entity_id=ai_record.id,
-        new_state={"confirmed_category": data.confirmed_category, "predicted": ai_record.predicted_category},
-        ip_address=request.client.host if request.client else None,
-    )
-
-    db.commit()
-    return {"status": "success", "confirmed_category": data.confirmed_category}
 
 @router.get("/wards/analytics", response_model=List[WardAnalyticsItem])
 def get_ward_analytics(

@@ -9,7 +9,6 @@ export interface PendingWasteRecord {
   collection_date: string;
   claim_status: string;
   admin_feedback?: string;
-  ai_classification_id?: string;
   timestamp: string;
 }
 
@@ -82,7 +81,6 @@ export const OfflineProvider: React.FC<{ children: React.ReactNode }> = ({ child
           collection_date: item.collection_date,
           claim_status: item.claim_status,
           admin_feedback: item.admin_feedback,
-          ai_classification_id: item.ai_classification_id,
           idempotency_key: item.idempotency_key,
         });
         successCount++;

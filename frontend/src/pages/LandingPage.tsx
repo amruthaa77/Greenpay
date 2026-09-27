@@ -20,6 +20,7 @@ import {
   ShoppingBag,
   Coins,
   Database,
+  QrCode,
 } from 'lucide-react';
 import { GreenPayLogo } from '../components/GreenPayLogo';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
@@ -615,23 +616,23 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onOpenDemo
               </div>
             </div>
 
-            {/* BENTO CARD 2: AI-Assisted Classification */}
+            {/* BENTO CARD 2: Permanent Citizen QR Verification */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-800 shadow-md flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-2xl bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 flex items-center justify-center mb-4">
-                  <Cpu className="w-5 h-5" />
+                  <QrCode className="w-5 h-5" />
                 </div>
                 <h4 className="font-bold text-base text-slate-900 dark:text-white break-words">
-                  {t('landing.bento_ai_title')}
+                  {t('landing.bento_qr_title') || 'Permanent Citizen QR Verification'}
                 </h4>
                 <p className="text-xs text-slate-600 dark:text-slate-300 mt-2 leading-relaxed break-words">
-                  {t('landing.bento_ai_desc')}
+                  {t('landing.bento_qr_desc') || 'Each citizen receives a permanent GreenPay ID (GP-XXXXXX) with an instant QR badge for frictionless doorstep waste collection and wallet crediting.'}
                 </p>
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                <span className="text-slate-500">Human Confirmation</span>
-                <span className="text-teal-600 dark:text-teal-400 font-bold">94% Confidence</span>
+                <span className="text-slate-500">Doorstep Scanning</span>
+                <span className="text-teal-600 dark:text-teal-400 font-bold">Instant Identification</span>
               </div>
             </div>
 

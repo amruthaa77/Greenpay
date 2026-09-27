@@ -35,11 +35,6 @@ from app.schemas.anomaly import (
     AnomalyResponse,
     AnomalyReviewRequest,
 )
-from app.schemas.ai import (
-    AIClassificationRequest,
-    AIClassificationResponse,
-    AIConfirmRequest,
-)
 from app.schemas.analytics import (
     AdminKPICards,
     WasteTrendPoint,
@@ -79,9 +74,6 @@ __all__ = [
     "RewardAdjustmentRequest",
     "AnomalyResponse",
     "AnomalyReviewRequest",
-    "AIClassificationRequest",
-    "AIClassificationResponse",
-    "AIConfirmRequest",
     "AdminKPICards",
     "WasteTrendPoint",
     "WardAnalyticsItem",

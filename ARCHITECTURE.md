@@ -16,7 +16,7 @@ GreenPay is designed as a production-quality, civic-tech urban waste accountabil
 |   | Citizen Experience       |  | Municipal Command Center |  | Offline     |   |
 |   | - Meter Authentication   |  | - Ward Intelligence      |  | Sync Engine |   |
 |   | - Green Score Gauge      |  | - Waste Weighment Input  |  | - Queue     |   |
-|   | - Immutable Wallet (₹)   |  | - AI Vision Assist Modal |  | - Idempotent|   |
+|   | - Immutable Wallet (₹)   |  | - Citizen QR Verify Modal|  | - Idempotent|   |
 |   | - Multi-Stage Journey    |  | - Anomaly Interception   |  |   Replay    |   |
 |   | - Scientific Impact      |  | - Traceable Audit Logs   |  |             |   |
 |   +--------------------------+  +--------------------------+  +-------------+   |
@@ -28,9 +28,9 @@ GreenPay is designed as a production-quality, civic-tech urban waste accountabil
 |   FastAPI (Python 3.10+)                                                        |
 |                                                                                 |
 |   +--------------------------+  +--------------------------+  +-------------+   |
-|   | Security & RBAC          |  | Domain Services          |  | AI & Math   |   |
-|   | - Meter-based Auth       |  | - Reward Engine (₹)      |  | - Extensible|   |
-|   | - Strict Tenant Isolation|  | - Anomaly Detector       |  |   Vision CV |   |
+|   | Security & RBAC          |  | Domain Services          |  | Analytics   |   |
+|   | - Meter-based Auth       |  | - Reward Engine (₹)      |  | - Citizen QR|   |
+|   | - Strict Tenant Isolation|  | - Anomaly Detector       |  |   Resolver  |   |
 |   | - Rate Limiting & Audit  |  | - Audit Trail Service    |  | - OLS Trend |   |
 |   | - Role Verification      |  | - Impact Calculator      |  |   Forecast  |   |
 |   +--------------------------+  +--------------------------+  +-------------+   |

@@ -185,19 +185,19 @@ export const AdminWardIntelligencePage: React.FC = () => {
         </div>
       </div>
 
-      {/* AI Predictive Forecast Card */}
+      {/* Predictive Volume Forecast Card */}
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-emerald-600" />
-              <CardTitle>AI Predictive Collection Forecast (Next 30 Days)</CardTitle>
+              <TrendingUp className="w-5 h-5 text-emerald-600" />
+              <CardTitle>Predictive Collection Forecast (Next 30 Days)</CardTitle>
             </div>
             <CardDescription>
-              Machine learning trend model trained on municipal seasonal consumption & festival cycles
+              Statistical trend model based on municipal seasonal consumption & collection cycles
             </CardDescription>
           </div>
-          <Badge variant="emerald" dot>94.2% Model Confidence</Badge>
+          <Badge variant="emerald" dot>Statistical Projection</Badge>
         </CardHeader>
         <CardContent>
           <div className="h-56 sm:h-64 w-full pt-2 min-w-0">

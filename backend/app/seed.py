@@ -8,7 +8,6 @@ from app.models.user import User, UserProfile
 from app.models.reward import RewardRule, RewardTransaction, RewardItem, RewardRedemption
 from app.models.waste import WasteEntry
 from app.models.anomaly import AnomalyFlag
-from app.models.ai import AIClassification
 from app.models.audit import AuditLog
 from app.models.notification import Notification
 
@@ -437,27 +436,6 @@ def seed_database():
                 timestamp=entry_time,
             )
             db.add(anomaly)
-
-    # 6. AI Classifications
-    ai1 = AIClassification(
-        admin_id=admin_user.id,
-        image_url="plastic_bottle",
-        detected_object="PET Polyethylene Terephthalate Bottle",
-        predicted_category="Clean Plastic Packaging",
-        confidence=0.94,
-        admin_confirmed_category="Clean Plastic Packaging",
-        is_overridden=0.0,
-    )
-    ai2 = AIClassification(
-        admin_id=admin_user.id,
-        image_url="e_waste_battery",
-        detected_object="Lithium-Ion Household Battery / Cell",
-        predicted_category="Contaminated Waste",
-        confidence=0.88,
-        admin_confirmed_category="Contaminated Waste",
-        is_overridden=0.0,
-    )
-    db.add_all([ai1, ai2])
 
     # 7. Notifications for Aarav
     notifs = [

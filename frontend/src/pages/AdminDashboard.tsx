@@ -332,7 +332,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onNavigate }) =>
               )}
             </CardContent>
             <div className="p-4 bg-slate-50 border-t border-slate-100 rounded-b-3xl flex items-center justify-between text-xs text-slate-500">
-              <span>Automatic AI Z-Score verification active</span>
+              <span>Automatic Statistical Z-Score verification active</span>
               <span className="font-mono text-emerald-700 font-bold">100% Monitored</span>
             </div>
           </Card>

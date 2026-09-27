@@ -119,69 +119,7 @@ export const api = {
   delete: <T>(endpoint: string) => request<T>(endpoint, { method: 'DELETE' }),
 };
 
-import type { VisionClassificationResult, CitizenLookupResult } from '../types';
-
-export const classifyWasteVisionImage = async (file: File): Promise<VisionClassificationResult> => {
-  const formData = new FormData();
-  formData.append('image', file);
-  try {
-    return await api.postFormData<VisionClassificationResult>('/admin/vision/classify', formData);
-  } catch (err: any) {
-    if (import.meta.env.DEV) {
-      console.error(`AI Vision real image classification failed at ${API_BASE_URL}/admin/vision/classify:`, err);
-    }
-    if (err instanceof ApiError) {
-      if (err.status === 0) {
-        throw new Error('Unable to connect to GreenPay services. Please ensure the backend server is running and try again.');
-      }
-      if (err.status === 401 || err.status === 403) {
-        throw new Error('Your admin session has expired. Please log in again.');
-      }
-      if (err.status === 413) {
-        throw new Error('Image file is too large. Maximum allowable size is 10MB.');
-      }
-      if (err.status === 422) {
-        throw new Error(err.message || 'Invalid image format. Only JPEG, PNG, and WEBP are supported.');
-      }
-      if (err.status === 503) {
-        throw new Error(err.message || 'AI Vision provider is not configured. Please set GEMINI_API_KEY in the environment.');
-      }
-      if (err.status >= 500) {
-        throw new Error('Vision classification failed. Please try again or inspect item manually.');
-      }
-      throw new Error(err.message || 'Vision classification failed. Please try again.');
-    }
-    throw new Error('Unable to connect to GreenPay services. Please ensure the backend server is running and try again.');
-  }
-};
-
-export const classifyWasteVision = async (preset: string): Promise<VisionClassificationResult> => {
-  const formData = new FormData();
-  formData.append('preset', preset);
-  try {
-    return await api.postFormData<VisionClassificationResult>('/admin/vision/classify', formData);
-  } catch (err: any) {
-    if (import.meta.env.DEV) {
-      console.error(`AI Vision preset classification request failed at ${API_BASE_URL}/admin/vision/classify:`, err);
-    }
-    if (err instanceof ApiError) {
-      if (err.status === 0) {
-        throw new Error('Unable to connect to GreenPay services. Please ensure the backend server is running and try again.');
-      }
-      if (err.status === 401 || err.status === 403) {
-        throw new Error('Your admin session has expired. Please log in again.');
-      }
-      if (err.status === 422) {
-        throw new Error(err.message || 'Invalid vision sample preset selected.');
-      }
-      if (err.status >= 500) {
-        throw new Error('Vision classification failed. Please try again.');
-      }
-      throw new Error(err.message || 'Vision classification failed. Please try again.');
-    }
-    throw new Error('Unable to connect to GreenPay services. Please ensure the backend server is running and try again.');
-  }
-};
+import type { CitizenLookupResult } from '../types';
 
 export const resolveCitizenByGreenpayId = async (greenpayId: string): Promise<CitizenLookupResult> => {
   try {

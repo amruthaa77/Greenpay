@@ -65,7 +65,6 @@ export interface WasteEntry {
   user_name?: string;
   meter_number?: string;
   greenpay_id?: string;
-  ai_classification_id?: string;
   user_type?: UserType;
   ward_name?: string;
   recorder_name?: string;
@@ -211,28 +210,6 @@ export interface Anomaly {
   admin_notes?: string;
   timestamp: string;
 }
-
-export interface VisionClassificationResult {
-  classification_id: string;
-  detected_object: string;
-  classification: WasteType;
-  predicted_category: WasteType;
-  confidence: number;
-  description: string;
-  action: 'ACCEPT' | 'REJECT';
-  rate_individual?: number;
-  rate_commercial?: number;
-  penalty_individual?: number;
-  penalty_commercial?: number;
-  points_rate_gp_per_kg?: number;
-  contamination_deduction_gp?: number;
-  is_assistance_only: boolean;
-  disclaimer: string;
-  visual_indicators: string[];
-  suggested_action: string;
-}
-
-export interface AIClassificationResult extends VisionClassificationResult {}
 
 export interface CitizenLookupResult {
   user_id: string;
